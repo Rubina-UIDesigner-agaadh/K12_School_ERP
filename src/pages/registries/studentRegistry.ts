@@ -67,6 +67,26 @@ export const studentRegistry: Record<string, () => any> = {
     () => import('../student/management/AuditTrail'),
     'AuditTrail'
   ),
+  'student-preference-collection': rp(
+    () => import('../student/management/StudentPreferenceCollection'),
+    'StudentPreferenceCollection'
+  ),
+  'stream-allocation-engine': rp(
+    () => import('../student/management/StreamAllocationEngine'),
+    'StreamAllocationEngine'
+  ),
+  'allocation-result': rp(
+    () => import('../student/management/AllocationResult'),
+    'AllocationResult'
+  ),
+  'manual-override-adjustment': rp(
+    () => import('../student/management/ManualOverrideAdjustment'),
+    'ManualOverrideAdjustment'
+  ),
+  'division-batch-change-approval': rp(
+    () => import('../student/management/DivisionBatchChangeApproval'),
+    'DivisionBatchChangeApproval'
+  ),
 
   // Settings
   'gr-no-rules': rp(() => import('../student/settings/GrNoRules'), 'GrNoRules'),
@@ -151,6 +171,10 @@ export const studentRegistry: Record<string, () => any> = {
   'admission-custom-search': rp(
     () => import('../student/admissions/AdmissionCustomSearch'),
     'AdmissionCustomSearch'
+  ),
+  'admission-audit-log': rp(
+    () => import('../student/admissions/AdmissionAuditLog'),
+    'AdmissionAuditLog'
   ),
   'student-readmission': rp(
     () => import('../student/admissions/StudentReadmission'),

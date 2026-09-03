@@ -16,6 +16,11 @@ export { StudentHealthMedical } from './management/StudentHealthMedical';
 export { StudentDiscipline } from './management/StudentDiscipline';
 export { StudentAchievements } from './management/StudentAchievements';
 export { AuditTrail } from './management/AuditTrail';
+export { StudentPreferenceCollection } from './management/StudentPreferenceCollection';
+export { StreamAllocationEngine } from './management/StreamAllocationEngine';
+export { AllocationResult } from './management/AllocationResult';
+export { ManualOverrideAdjustment } from './management/ManualOverrideAdjustment';
+export { DivisionBatchChangeApproval } from './management/DivisionBatchChangeApproval';
 
 // Settings
 export { GrNoRules } from './settings/GrNoRules';
@@ -42,6 +47,7 @@ export { AdmissionStudentSetup } from './admissions/AdmissionStudentSetup';
 export { AlertAdmissions } from './admissions/AlertAdmissions';
 export { AdmissionReport } from './admissions/AdmissionReport';
 export { AdmissionCustomSearch } from './admissions/AdmissionCustomSearch';
+export { AdmissionAuditLog } from './admissions/AdmissionAuditLog';
 export { InquiryReferenceMaster } from './admissions/InquiryReferenceMaster';
 export { AdmissionInquirySetup } from './admissions/AdmissionInquirySetup';
 

@@ -23,16 +23,24 @@ import {
   TrendingUp,
   TrendingDown,
   Building2,
-  ChevronDown,
-  GraduationCap } from
+  ChevronDown } from
 'lucide-react';
-import { ReportFilters } from '../../../components/ReportFilters';
 // Types
 interface Transaction {
   id: number;
   date: string;
   voucherNo: string;
-  voucherType: 'Receipt' | 'Payment' | 'Journal' | 'Contra';
+  voucherType:
+  | 'Receipt'
+  | 'Payment'
+  | 'Journal'
+  | 'Contra'
+  | 'Fee'
+  | 'Expense'
+  | 'Invoice'
+  | 'Salary'
+  | 'Transfer'
+  | 'Depreciation';
   accountDebited: string;
   accountCredited: string;
   debitAmount: number;
@@ -99,6 +107,30 @@ const VOUCHER_TYPES = [
 {
   value: 'Contra',
   label: 'Contra'
+},
+{
+  value: 'Fee',
+  label: 'Fee Receipt'
+},
+{
+  value: 'Expense',
+  label: 'Expense'
+},
+{
+  value: 'Invoice',
+  label: 'Invoice'
+},
+{
+  value: 'Salary',
+  label: 'Salary'
+},
+{
+  value: 'Transfer',
+  label: 'Transfer'
+},
+{
+  value: 'Depreciation',
+  label: 'Depreciation'
 }];
 
 const USERS = [
@@ -247,7 +279,13 @@ const getVoucherStyle = (type: string) =>
   Receipt: 'bg-green-100 text-green-800',
   Payment: 'bg-red-100 text-red-800',
   Journal: 'bg-blue-100 text-blue-800',
-  Contra: 'bg-purple-100 text-purple-800'
+  Contra: 'bg-purple-100 text-purple-800',
+  Fee: 'bg-emerald-100 text-emerald-800',
+  Expense: 'bg-orange-100 text-orange-800',
+  Invoice: 'bg-indigo-100 text-indigo-800',
+  Salary: 'bg-teal-100 text-teal-800',
+  Transfer: 'bg-cyan-100 text-cyan-800',
+  Depreciation: 'bg-amber-100 text-amber-800'
 })[type] || 'bg-gray-100 text-gray-800';
 const getStatusStyle = (status: string) =>
 ({
@@ -1138,6 +1176,91 @@ const generateTransactions = (): Transaction[] => {
     narration: 'Canteen rent - January 2024',
     enteredBy: 'Admin',
     status: 'Approved'
+  },
+  {
+    id: 66,
+    date: '2024-01-12',
+    voucherNo: 'FEE-001',
+    voucherType: 'Fee',
+    accountDebited: 'Bank Account - HDFC',
+    accountCredited: 'Tuition Fee - Class 9',
+    debitAmount: 42000,
+    creditAmount: 42000,
+    narration: 'Online fee collection batch - Class 9 (12 students)',
+    enteredBy: 'Cashier',
+    status: 'Approved',
+    referenceNo: 'FEE-ONL-2024-001'
+  },
+  {
+    id: 67,
+    date: '2024-01-15',
+    voucherNo: 'EXP-001',
+    voucherType: 'Expense',
+    accountDebited: 'Housekeeping Expense',
+    accountCredited: 'Cash Account',
+    debitAmount: 18500,
+    creditAmount: 18500,
+    narration: 'Housekeeping and cleaning supplies - January 2024',
+    enteredBy: 'Admin',
+    status: 'Approved',
+    referenceNo: 'HK-2024-001'
+  },
+  {
+    id: 68,
+    date: '2024-01-16',
+    voucherNo: 'INV-001',
+    voucherType: 'Invoice',
+    accountDebited: 'Fee Receivables',
+    accountCredited: 'Tuition Fee - Class 11',
+    debitAmount: 66000,
+    creditAmount: 66000,
+    narration: 'Q4 fee invoice raised - Class 11 Commerce',
+    enteredBy: 'Accountant',
+    status: 'Pending',
+    referenceNo: 'INV-2024-001'
+  },
+  {
+    id: 69,
+    date: '2024-01-17',
+    voucherNo: 'SAL-001',
+    voucherType: 'Salary',
+    accountDebited: 'Salary Expense - Teaching Staff',
+    accountCredited: 'Bank Account - SBI',
+    debitAmount: 275000,
+    creditAmount: 275000,
+    narration: 'January 2024 salary disbursement - Teaching Staff',
+    enteredBy: 'Accountant',
+    status: 'Approved',
+    referenceNo: 'SAL-JAN-2024',
+    chequeNo: 'CHQ-900112'
+  },
+  {
+    id: 70,
+    date: '2024-01-18',
+    voucherNo: 'TRF-001',
+    voucherType: 'Transfer',
+    accountDebited: 'Bank Account - ICICI',
+    accountCredited: 'Bank Account - SBI',
+    debitAmount: 300000,
+    creditAmount: 300000,
+    narration: 'Funds transferred to ICICI operating account',
+    enteredBy: 'Accountant',
+    status: 'Approved',
+    referenceNo: 'TRF-2024-001'
+  },
+  {
+    id: 71,
+    date: '2024-01-31',
+    voucherNo: 'DEP-001',
+    voucherType: 'Depreciation',
+    accountDebited: 'Depreciation Expense',
+    accountCredited: 'Accumulated Depreciation - Vehicles',
+    debitAmount: 22000,
+    creditAmount: 22000,
+    narration: 'Monthly depreciation on school transport vehicles',
+    enteredBy: 'Accountant',
+    status: 'Approved',
+    referenceNo: 'DEP-VEH-JAN-24'
   }];
 
   return baseData.map((t, i) => ({
@@ -1168,7 +1291,6 @@ export function DayBookReport() {
     null
   );
   const [showVoucherModal, setShowVoucherModal] = useState(false);
-  const [groupByBranch, setGroupByBranch] = useState(true);
   const allTransactions = useMemo(() => generateTransactions(), []);
   // Filtering
   const filteredTransactions = useMemo(() => {
@@ -1326,68 +1448,6 @@ export function DayBookReport() {
         </div>
       </div>
 
-      <ReportFilters />
-
-      {/* Batch & Branch Filters */}
-      <Card className="p-4">
-        <div className="flex flex-wrap items-center gap-4">
-          <div className="flex items-center gap-2 px-3 py-2 bg-white border rounded-lg">
-            <GraduationCap className="w-4 h-4 text-gray-500" />
-            <select
-              value={selectedBatch}
-              onChange={(e) => setSelectedBatch(e.target.value)}
-              className="border-0 text-sm focus:ring-0">
-
-              {BATCHES.map((b) =>
-              <option key={b} value={b}>
-                  {b}
-                </option>
-              )}
-            </select>
-          </div>
-          <MultiSelectDropdown
-            options={BRANCHES.map((b) => ({
-              value: b.code,
-              label: b.name
-            }))}
-            selected={selectedBranches}
-            onChange={setSelectedBranches}
-            placeholder="Select Branches"
-            icon={<Building2 className="w-4 h-4 text-gray-500" />} />
-
-          <div className="flex items-center gap-2 ml-auto">
-            <span className="text-sm text-gray-500">Group by Branch:</span>
-            <button
-              onClick={() => setGroupByBranch(!groupByBranch)}
-              className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${groupByBranch ? 'bg-blue-600 text-white' : 'bg-gray-200 text-gray-700'}`}>
-
-              {groupByBranch ? 'ON' : 'OFF'}
-            </button>
-          </div>
-        </div>
-        {/* Active Selection Display */}
-        <div className="flex items-center gap-2 mt-3 flex-wrap">
-          <span className="text-sm text-gray-500">Showing:</span>
-          <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs font-medium flex items-center gap-1">
-            <Calendar className="w-3 h-3" />
-            {selectedBatch}
-          </span>
-          {selectedBranches.length === BRANCHES.length ?
-          <span className="px-2 py-1 bg-green-100 text-green-800 rounded text-xs font-medium">
-              All Branches
-            </span> :
-
-          selectedBranches.map((b) =>
-          <span
-            key={b}
-            className="px-2 py-1 bg-purple-100 text-purple-800 rounded text-xs font-medium">
-
-                {b}
-              </span>
-          )
-          }
-        </div>
-      </Card>
 
       {/* Filters */}
       <Card className="p-4">
@@ -1410,7 +1470,7 @@ export function DayBookReport() {
             </Button>
           </div>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Date Type
@@ -1483,19 +1543,71 @@ export function DayBookReport() {
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
+              Academic Year
+            </label>
+            <select
+              value={selectedBatch}
+              onChange={(e) => setSelectedBatch(e.target.value)}
+              className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500">
+
+              {BATCHES.map((b) =>
+              <option key={b} value={b}>
+                  {b}
+                </option>
+              )}
+            </select>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Branch
+            </label>
+            <MultiSelectDropdown
+              options={BRANCHES.map((b) => ({
+                value: b.code,
+                label: b.name
+              }))}
+              selected={selectedBranches}
+              onChange={setSelectedBranches}
+              placeholder="Select Branches"
+              icon={<Building2 className="w-4 h-4 text-gray-500" />} />
+          </div>
+          <div className="lg:col-span-2">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
               Search
             </label>
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
               <input
                 type="text"
-                placeholder="Voucher No"
+                placeholder="Search by voucher no, account or narration"
                 className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
                 value={searchVoucher}
                 onChange={(e) => setSearchVoucher(e.target.value)} />
 
             </div>
           </div>
+        </div>
+        {/* Active Selection Display */}
+        <div className="flex items-center gap-2 mt-3 flex-wrap">
+          <span className="text-sm text-gray-500">Showing:</span>
+          <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs font-medium flex items-center gap-1">
+            <Calendar className="w-3 h-3" />
+            {selectedBatch}
+          </span>
+          {selectedBranches.length === BRANCHES.length ?
+          <span className="px-2 py-1 bg-green-100 text-green-800 rounded text-xs font-medium">
+              All Branches
+            </span> :
+
+          selectedBranches.map((b) =>
+          <span
+            key={b}
+            className="px-2 py-1 bg-purple-100 text-purple-800 rounded text-xs font-medium">
+
+                {b}
+              </span>
+          )
+          }
         </div>
         {showFilters &&
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-4 pt-4 border-t">
@@ -1669,7 +1781,7 @@ export function DayBookReport() {
       </div>
 
       {/* Branch-wise Summary */}
-      {groupByBranch && summary.byBranch.length > 0 &&
+      {summary.byBranch.length > 0 &&
       <Card className="p-4">
           <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
             <Building2 className="w-5 h-5 text-blue-500" />
@@ -1780,8 +1892,26 @@ export function DayBookReport() {
                   </td>
                 </tr> :
 
-              filteredTransactions.map((t) =>
-              <tr key={t.id} className="hover:bg-gray-50">
+              BRANCHES.filter((b) => selectedBranches.includes(b.code)).map((branch) => {
+                const branchRows = filteredTransactions.filter((t) => t.branch === branch.code);
+                if (branchRows.length === 0) return null;
+                return (
+                  <React.Fragment key={branch.id}>
+                    <tr className="bg-gray-100">
+                      <td colSpan={11} className="px-4 py-2">
+                        <span className="inline-flex items-center gap-2 text-xs font-semibold text-gray-700">
+                          <span className="px-2 py-0.5 bg-indigo-600 text-white rounded">
+                            {branch.code}
+                          </span>
+                          <span className="uppercase tracking-wide">{branch.name}</span>
+                          <span className="font-normal text-gray-500">
+                            — {branchRows.length} transactions
+                          </span>
+                        </span>
+                      </td>
+                    </tr>
+                    {branchRows.map((t) =>
+                    <tr key={t.id} className="hover:bg-gray-50">
                     <td className="px-4 py-3 text-sm text-gray-700 whitespace-nowrap">
                       {formatDate(t.date)}
                     </td>
@@ -1850,7 +1980,10 @@ export function DayBookReport() {
                       </Button>
                     </td>
                   </tr>
-              )
+                    )}
+                  </React.Fragment>
+                );
+              })
               }
             </tbody>
           </table>

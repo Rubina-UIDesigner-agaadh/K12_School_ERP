@@ -47,7 +47,7 @@ import {
   ChevronLeft,
   MapPin } from
 'lucide-react';
-import { ReportFilters } from '../../../components/ReportFilters';
+import { ACADEMIC_YEARS } from '../../../components/ReportFilters';
 // Types
 type LedgerType = 'all' | 'accounts' | 'student' | 'vendor' | 'staff' | 'assets';
 type VoucherType =
@@ -131,6 +131,7 @@ interface FilterState {
   partySearch: string;
   referenceNo: string;
   chequeNo: string;
+  academicYear: string;
 }
 const initialFilters: FilterState = {
   ledgerAccount: '',
@@ -145,7 +146,8 @@ const initialFilters: FilterState = {
   partyType: 'all',
   partySearch: '',
   referenceNo: '',
-  chequeNo: ''
+  chequeNo: '',
+  academicYear: ''
 };
 // Branch & Batch Options
 const branchOptions = [
@@ -178,28 +180,6 @@ const branchOptions = [
   value: 'rajkot',
   label: 'Rajkot Branch',
   color: 'bg-cyan-500'
-}];
-
-const batchOptions = [
-{
-  value: '',
-  label: 'All Batches'
-},
-{
-  value: 'morning',
-  label: 'Morning (7:00 AM - 12:00 PM)'
-},
-{
-  value: 'afternoon',
-  label: 'Afternoon (12:00 PM - 5:00 PM)'
-},
-{
-  value: 'evening',
-  label: 'Evening (5:00 PM - 8:00 PM)'
-},
-{
-  value: 'full-day',
-  label: 'Full Day'
 }];
 
 const ledgerTypes = [
@@ -1024,6 +1004,12 @@ export function GeneralLedger() {
     data = data.filter((e) => e.date >= appliedFilters.fromDate);
     if (appliedFilters.toDate)
     data = data.filter((e) => e.date <= appliedFilters.toDate);
+    if (appliedFilters.academicYear) {
+      const startYear = parseInt(appliedFilters.academicYear.slice(0, 4), 10);
+      const ayStart = `${startYear}-04-01`;
+      const ayEnd = `${startYear + 1}-03-31`;
+      data = data.filter((e) => e.date >= ayStart && e.date <= ayEnd);
+    }
     if (appliedFilters.transactionType === 'debit')
     data = data.filter((e) => e.debit > 0);else
     if (appliedFilters.transactionType === 'credit')
@@ -1439,137 +1425,6 @@ export function GeneralLedger() {
         </div>
       </div>
 
-      <ReportFilters />
-
-      {/* Branch & Batch Selection */}
-      <Card className="p-4">
-        <div className="flex flex-wrap items-center gap-4">
-          <div className="flex items-center gap-2">
-            <MapPin className="w-4 h-4 text-gray-500" />
-            <span className="text-sm font-medium text-gray-700">
-              Branch & Batch:
-            </span>
-          </div>
-
-          {/* Multi-select Branch */}
-          <div className="relative">
-            <button
-              onClick={() => setShowBranchDropdown(!showBranchDropdown)}
-              className="flex items-center gap-2 px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white min-w-[200px]">
-
-              <Building className="w-4 h-4 text-gray-400" />
-              <span className="flex-1 text-left">
-                {selectedBranches.length === 0 ?
-                'All Branches' :
-                selectedBranches.length === branchOptions.length ?
-                'All Branches Selected' :
-                `${selectedBranches.length} Branch(es)`}
-              </span>
-              <ChevronDown
-                className={`w-4 h-4 text-gray-400 transition-transform ${showBranchDropdown ? 'rotate-180' : ''}`} />
-
-            </button>
-            {showBranchDropdown &&
-            <div className="absolute z-20 w-72 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg">
-                <div className="p-2 border-b flex justify-between">
-                  <button
-                  onClick={() =>
-                  setSelectedBranches(branchOptions.map((b) => b.value))
-                  }
-                  className="text-xs text-blue-600 hover:text-blue-700 font-medium">
-
-                    Select All
-                  </button>
-                  <button
-                  onClick={() => setSelectedBranches([])}
-                  className="text-xs text-gray-500 hover:text-gray-700">
-
-                    Clear All
-                  </button>
-                </div>
-                <div className="max-h-60 overflow-y-auto py-1">
-                  {branchOptions.map((branch) =>
-                <label
-                  key={branch.value}
-                  className="flex items-center gap-3 px-3 py-2 hover:bg-gray-50 cursor-pointer">
-
-                      <div
-                    className={`w-5 h-5 rounded border-2 flex items-center justify-center ${selectedBranches.includes(branch.value) ? 'bg-blue-600 border-blue-600' : 'border-gray-300'}`}>
-
-                        {selectedBranches.includes(branch.value) &&
-                    <Check className="w-3 h-3 text-white" />
-                    }
-                      </div>
-                      <span
-                    className={`w-3 h-3 rounded-full ${branch.color}`}>
-                  </span>
-                      <span className="text-sm text-gray-700">
-                        {branch.label}
-                      </span>
-                    </label>
-                )}
-                </div>
-                <div className="p-2 border-t">
-                  <button
-                  onClick={() => setShowBranchDropdown(false)}
-                  className="w-full py-1.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700">
-
-                    Done
-                  </button>
-                </div>
-              </div>
-            }
-          </div>
-
-          {/* Selected Branch Tags */}
-          {selectedBranches.length > 0 &&
-          <div className="flex flex-wrap gap-1">
-              {selectedBranches.slice(0, 3).map((b) =>
-            <span
-              key={b}
-              className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium text-white ${getBranchColor(b)}`}>
-
-                  {getBranchLabel(b).split(' - ')[0]}
-                  <button
-                onClick={() => toggleBranch(b)}
-                className="hover:bg-white/20 rounded-full p-0.5">
-
-                    <X className="w-3 h-3" />
-                  </button>
-                </span>
-            )}
-              {selectedBranches.length > 3 &&
-            <span className="px-2 py-1 rounded-full text-xs font-medium bg-gray-200 text-gray-700">
-                  +{selectedBranches.length - 3} more
-                </span>
-            }
-            </div>
-          }
-
-          {/* Single-select Batch */}
-          <select
-            value={selectedBatch}
-            onChange={(e) => setSelectedBatch(e.target.value)}
-            className="px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white">
-
-            {batchOptions.map((b) =>
-            <option key={b.value} value={b.value}>
-                {b.label}
-              </option>
-            )}
-          </select>
-
-          {isFilterActive &&
-          <button
-            onClick={handleResetFilters}
-            className="flex items-center gap-1 px-3 py-2 text-sm font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100">
-
-              <X className="w-4 h-4" />
-              Reset
-            </button>
-          }
-        </div>
-      </Card>
 
       {/* Ledger Type Tabs */}
       <Card className="p-4">
@@ -1791,6 +1646,137 @@ export function GeneralLedger() {
         </div>
         {isFilterExpanded &&
         <div className="p-4 space-y-4">
+        <div className="space-y-3 pb-4 border-b">
+        <div className="flex flex-wrap items-center gap-4">
+          <div className="flex items-center gap-2">
+            <MapPin className="w-4 h-4 text-gray-500" />
+            <span className="text-sm font-medium text-gray-700">
+              Branch:
+            </span>
+          </div>
+
+          {/* Multi-select Branch */}
+          <div className="relative">
+            <button
+              onClick={() => setShowBranchDropdown(!showBranchDropdown)}
+              className="flex items-center gap-2 px-3 py-2 text-sm border border-gray-300 rounded-lg bg-white min-w-[200px]">
+
+              <Building className="w-4 h-4 text-gray-400" />
+              <span className="flex-1 text-left">
+                {selectedBranches.length === 0 ?
+                'All Branches' :
+                selectedBranches.length === branchOptions.length ?
+                'All Branches Selected' :
+                `${selectedBranches.length} Branch(es)`}
+              </span>
+              <ChevronDown
+                className={`w-4 h-4 text-gray-400 transition-transform ${showBranchDropdown ? 'rotate-180' : ''}`} />
+
+            </button>
+            {showBranchDropdown &&
+            <div className="absolute z-20 w-72 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg">
+                <div className="p-2 border-b flex justify-between">
+                  <button
+                  onClick={() =>
+                  setSelectedBranches(branchOptions.map((b) => b.value))
+                  }
+                  className="text-xs text-blue-600 hover:text-blue-700 font-medium">
+
+                    Select All
+                  </button>
+                  <button
+                  onClick={() => setSelectedBranches([])}
+                  className="text-xs text-gray-500 hover:text-gray-700">
+
+                    Clear All
+                  </button>
+                </div>
+                <div className="max-h-60 overflow-y-auto py-1">
+                  {branchOptions.map((branch) =>
+                <label
+                  key={branch.value}
+                  className="flex items-center gap-3 px-3 py-2 hover:bg-gray-50 cursor-pointer">
+
+                      <div
+                    className={`w-5 h-5 rounded border-2 flex items-center justify-center ${selectedBranches.includes(branch.value) ? 'bg-blue-600 border-blue-600' : 'border-gray-300'}`}>
+
+                        {selectedBranches.includes(branch.value) &&
+                    <Check className="w-3 h-3 text-white" />
+                    }
+                      </div>
+                      <span
+                    className={`w-3 h-3 rounded-full ${branch.color}`}>
+                  </span>
+                      <span className="text-sm text-gray-700">
+                        {branch.label}
+                      </span>
+                    </label>
+                )}
+                </div>
+                <div className="p-2 border-t">
+                  <button
+                  onClick={() => setShowBranchDropdown(false)}
+                  className="w-full py-1.5 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700">
+
+                    Done
+                  </button>
+                </div>
+              </div>
+            }
+          </div>
+
+          {/* Academic Year */}
+          <div className="flex items-center gap-2">
+            <Calendar className="w-4 h-4 text-gray-500" />
+            <Select
+              value={filters.academicYear}
+              onChange={(value: string) =>
+              handleFilterChange('academicYear', value)
+              }
+              options={[
+                { value: '', label: 'All Academic Years' },
+                ...ACADEMIC_YEARS
+              ]}
+              className="w-44" />
+          </div>
+
+          {/* Selected Branch Tags */}
+          {selectedBranches.length > 0 &&
+          <div className="flex flex-wrap gap-1">
+              {selectedBranches.slice(0, 3).map((b) =>
+            <span
+              key={b}
+              className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium text-white ${getBranchColor(b)}`}>
+
+                  {getBranchLabel(b).split(' - ')[0]}
+                  <button
+                onClick={() => toggleBranch(b)}
+                className="hover:bg-white/20 rounded-full p-0.5">
+
+                    <X className="w-3 h-3" />
+                  </button>
+                </span>
+            )}
+              {selectedBranches.length > 3 &&
+            <span className="px-2 py-1 rounded-full text-xs font-medium bg-gray-200 text-gray-700">
+                  +{selectedBranches.length - 3} more
+                </span>
+            }
+            </div>
+          }
+
+
+          {isFilterActive &&
+          <button
+            onClick={handleResetFilters}
+            className="flex items-center gap-1 px-3 py-2 text-sm font-medium text-red-600 bg-red-50 rounded-lg hover:bg-red-100">
+
+              <X className="w-4 h-4" />
+              Reset
+            </button>
+          }
+        </div>
+        </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6 gap-4">
               <Input
               type="date"

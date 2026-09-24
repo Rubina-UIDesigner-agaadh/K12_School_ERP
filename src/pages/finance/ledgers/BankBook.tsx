@@ -3,6 +3,9 @@ import React, { useMemo, useState, createElement } from 'react';
 
 import { Card } from '../../../components/ui/Card';
 import { Button } from '../../../components/ui/Button';
+import { Input } from '../../../components/ui/Input';
+import { Select } from '../../../components/ui/Select';
+import { Modal } from '../../../components/ui/Modal';
 import {
   Download,
   Printer,
@@ -13,15 +16,14 @@ import {
   TrendingUp,
   TrendingDown,
   Wallet,
-  Link as LinkIcon,
   AlertTriangle,
   CheckCircle,
   X,
   ChevronDown,
   GitBranch,
+  Plus,
   Users } from
 'lucide-react';
-import { ReportFilters } from '../../../components/ReportFilters';
 // Interfaces
 interface BankTransaction {
   id: number;
@@ -165,7 +167,7 @@ export function BankBook() {
   }];
 
   // Bank Transactions Data with branch and batch
-  const allTransactions: BankTransaction[] = [
+  const [allTransactions, setAllTransactions] = useState<BankTransaction[]>([
   {
     id: 1,
     date: '2024-01-01',
@@ -1043,7 +1045,7 @@ export function BankBook() {
     reconciled: true,
     branchId: 'east',
     batchId: '2024'
-  }];
+  }]);
 
   // Filter Logic
   const filteredTransactions = useMemo(() => {
@@ -1148,6 +1150,75 @@ export function BankBook() {
     month: 'short',
     year: 'numeric'
   });
+  // Manual Bank Transaction Entry
+  const [showAddTxnModal, setShowAddTxnModal] = useState(false);
+  const [newTxn, setNewTxn] = useState({
+    date: '2024-01-31',
+    bankId: bankAccounts[0]?.id || '',
+    voucherNo: '',
+    description: '',
+    type: 'deposit' as 'deposit' | 'withdrawal',
+    amount: '',
+    chequeNo: '',
+    referenceNo: '',
+    branchId: branches[0]?.id || '',
+    batchId: batches[1]?.id || batches[0]?.id || ''
+  });
+  const openAddTxnModal = () => {
+    setNewTxn((f) => ({
+      ...f,
+      bankId: selectedBankId !== 'all' ? selectedBankId : f.bankId,
+      branchId:
+      selectedBranches.includes('all') || selectedBranches.length !== 1 ?
+      f.branchId :
+      selectedBranches[0],
+      batchId: selectedBatch !== 'all' ? selectedBatch : f.batchId
+    }));
+    setShowAddTxnModal(true);
+  };
+  const handleAddTransaction = () => {
+    const amount = Number(newTxn.amount) || 0;
+    if (!newTxn.bankId || !newTxn.description.trim() || amount <= 0) return;
+    const bank = bankAccounts.find((b) => b.id === newTxn.bankId);
+    const bankTxns = allTransactions.
+    filter((t) => t.bankId === newTxn.bankId).
+    sort((a, b) => a.date < b.date ? -1 : 1);
+    const lastBalance = bankTxns.length > 0 ?
+    bankTxns[bankTxns.length - 1].runningBalance :
+    bank?.openingBalance || 0;
+    const deposit = newTxn.type === 'deposit' ? amount : 0;
+    const withdrawal = newTxn.type === 'withdrawal' ? amount : 0;
+    const txn: BankTransaction = {
+      id: Math.max(0, ...allTransactions.map((t) => t.id)) + 1,
+      date: newTxn.date,
+      bankId: newTxn.bankId,
+      bankName: bank?.name || '',
+      voucherNo:
+      newTxn.voucherNo ||
+      `${newTxn.type === 'deposit' ? 'DEP' : 'WDL'}-${String(
+        allTransactions.length + 1
+      ).padStart(3, '0')}`,
+      description: newTxn.description.trim(),
+      deposit,
+      withdrawal,
+      runningBalance: lastBalance + deposit - withdrawal,
+      chequeNo: newTxn.chequeNo || undefined,
+      referenceNo: newTxn.referenceNo || undefined,
+      reconciled: false,
+      branchId: newTxn.branchId,
+      batchId: newTxn.batchId
+    };
+    setAllTransactions((prev) => [...prev, txn]);
+    setShowAddTxnModal(false);
+    setNewTxn((f) => ({
+      ...f,
+      voucherNo: '',
+      description: '',
+      amount: '',
+      chequeNo: '',
+      referenceNo: ''
+    }));
+  };
   const formatCurrency = (n: number) => n.toLocaleString('en-IN');
   const getBankName = (id: string) =>
   bankAccounts.find((b) => b.id === id)?.name || id;
@@ -1239,6 +1310,9 @@ export function BankBook() {
           </p>
         </div>
         <div className="flex gap-2">
+          <Button variant="primary" onClick={openAddTxnModal}>
+            <Plus className="w-4 h-4 mr-2" /> Add Transaction
+          </Button>
           <Button variant="outline" onClick={() => window.print()}>
             <Printer className="w-4 h-4 mr-2" /> Print
           </Button>
@@ -1247,8 +1321,6 @@ export function BankBook() {
           </Button>
         </div>
       </div>
-
-      <ReportFilters />
 
       {/* Bank Account Summary Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -1636,32 +1708,6 @@ export function BankBook() {
         </div>
       </Card>
 
-      {/* Reconciliation Status */}
-      <Card className="p-4">
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-yellow-100 rounded-full">
-              <AlertTriangle className="w-6 h-6 text-yellow-600" />
-            </div>
-            <div>
-              <p className="text-sm text-gray-500">Reconciliation Status</p>
-              <p className="text-lg font-semibold text-gray-800">
-                {summary.reconciledCount} reconciled,{' '}
-                {summary.unreconciledCount} pending
-              </p>
-            </div>
-          </div>
-          <div className="flex gap-2">
-            <Button variant="outline">
-              <LinkIcon className="w-4 h-4 mr-2" /> Bank Reconciliation
-            </Button>
-            <Button variant="primary">
-              <CheckCircle className="w-4 h-4 mr-2" /> Reconcile Now
-            </Button>
-          </div>
-        </div>
-      </Card>
-
       {/* Transaction Table */}
       <Card className="p-4">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-4">
@@ -1942,6 +1988,113 @@ export function BankBook() {
           </div>
         </Card>
       }
+
+      {/* Add Bank Transaction Modal */}
+      <Modal
+        isOpen={showAddTxnModal}
+        onClose={() => setShowAddTxnModal(false)}
+        title="Add Bank Transaction"
+        size="lg"
+        footer={
+        <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setShowAddTxnModal(false)}>
+              Cancel
+            </Button>
+            <Button variant="primary" onClick={handleAddTransaction}>
+              <Plus className="w-4 h-4 mr-2" /> Save Transaction
+            </Button>
+          </div>
+        }>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Input
+            label="Date"
+            type="date"
+            value={newTxn.date}
+            onChange={(e) => setNewTxn((f) => ({ ...f, date: e.target.value }))} />
+
+          <Select
+            label="Bank Account"
+            value={newTxn.bankId}
+            onChange={(value: string) =>
+            setNewTxn((f) => ({ ...f, bankId: value }))
+            }
+            options={bankAccounts.map((b) => ({
+              value: b.id,
+              label: `${b.name} • ****${b.accountNumber.slice(-4)}`
+            }))} />
+
+          <Select
+            label="Transaction Type"
+            value={newTxn.type}
+            onChange={(value: string) =>
+            setNewTxn((f) => ({ ...f, type: value as 'deposit' | 'withdrawal' }))
+            }
+            options={[
+            { value: 'deposit', label: 'Deposit' },
+            { value: 'withdrawal', label: 'Withdrawal' }]
+            } />
+
+          <Input
+            label="Amount (₹)"
+            type="number"
+            placeholder="0.00"
+            value={newTxn.amount}
+            onChange={(e) => setNewTxn((f) => ({ ...f, amount: e.target.value }))} />
+
+          <Input
+            label="Voucher No"
+            placeholder="Auto-generated if left blank"
+            value={newTxn.voucherNo}
+            onChange={(e) =>
+            setNewTxn((f) => ({ ...f, voucherNo: e.target.value }))
+            } />
+
+          <Input
+            label="Cheque No"
+            placeholder="Optional"
+            value={newTxn.chequeNo}
+            onChange={(e) =>
+            setNewTxn((f) => ({ ...f, chequeNo: e.target.value }))
+            } />
+
+          <Input
+            label="Reference No"
+            placeholder="Optional"
+            value={newTxn.referenceNo}
+            onChange={(e) =>
+            setNewTxn((f) => ({ ...f, referenceNo: e.target.value }))
+            } />
+
+          <Select
+            label="Branch"
+            value={newTxn.branchId}
+            onChange={(value: string) =>
+            setNewTxn((f) => ({ ...f, branchId: value }))
+            }
+            options={branches.map((b) => ({ value: b.id, label: b.name }))} />
+
+          <Select
+            label="Batch"
+            value={newTxn.batchId}
+            onChange={(value: string) =>
+            setNewTxn((f) => ({ ...f, batchId: value }))
+            }
+            options={batches.
+            filter((b) => b.id !== 'all').
+            map((b) => ({ value: b.id, label: b.name }))} />
+
+          <div className="md:col-span-2">
+            <Input
+              label="Description / Narration"
+              placeholder="e.g. Cash deposited to bank"
+              value={newTxn.description}
+              onChange={(e) =>
+              setNewTxn((f) => ({ ...f, description: e.target.value }))
+              } />
+          </div>
+        </div>
+      </Modal>
     </div>);
 
 }

@@ -52,7 +52,6 @@ import {
   Trash2,
   Check } from
 'lucide-react';
-import { ReportFilters } from '../../../components/ReportFilters';
 // --- Constants ---
 const BRANCHES = [
 {
@@ -74,20 +73,6 @@ const BRANCHES = [
   id: 'east',
   name: 'East Branch',
   color: '#8b5cf6'
-}];
-
-const BATCHES = [
-{
-  value: '2024-25',
-  label: '2024-25'
-},
-{
-  value: '2023-24',
-  label: '2023-24'
-},
-{
-  value: '2022-23',
-  label: '2022-23'
 }];
 
 // --- Types ---
@@ -409,88 +394,6 @@ const generateTransactions = (): CashTransaction[] => {
   return allTransactions;
 };
 // --- Components ---
-const MultiSelect = ({
-  options,
-  selected,
-  onChange
-
-
-
-
-}: {options: typeof BRANCHES;selected: string[];onChange: (v: string[]) => void;}) => {
-  const [open, setOpen] = useState(false);
-  const allSelected = selected.length === options.length;
-  return (
-    <div className="relative">
-      <button
-        onClick={() => setOpen(!open)}
-        className="flex items-center gap-2 px-3 py-2 bg-white border border-gray-300 rounded-lg text-sm hover:border-gray-400 min-w-[180px]">
-
-        <Building className="w-4 h-4 text-gray-500" />
-        <span className="flex-1 text-left">
-          {selected.length === 0 ?
-          'Select Branches' :
-          allSelected ?
-          'All Branches' :
-          `${selected.length} Branch${selected.length > 1 ? 'es' : ''}`}
-        </span>
-        <ChevronDown className="w-4 h-4 text-gray-400" />
-      </button>
-      {open &&
-      <>
-          <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
-          <div className="absolute top-full left-0 mt-1 bg-white border rounded-lg shadow-lg z-50 min-w-full">
-            <div className="p-2 border-b">
-              <button
-              onClick={() =>
-              onChange(allSelected ? [] : options.map((o) => o.id))
-              }
-              className="w-full flex items-center gap-2 px-2 py-1.5 text-sm hover:bg-gray-50 rounded">
-
-                <div
-                className={`w-4 h-4 border rounded flex items-center justify-center ${allSelected ? 'bg-blue-600 border-blue-600' : 'border-gray-300'}`}>
-
-                  {allSelected && <Check className="w-3 h-3 text-white" />}
-                </div>
-                Select All
-              </button>
-            </div>
-            <div className="p-2 max-h-48 overflow-y-auto">
-              {options.map((opt) =>
-            <button
-              key={opt.id}
-              onClick={() =>
-              onChange(
-                selected.includes(opt.id) ?
-                selected.filter((s) => s !== opt.id) :
-                [...selected, opt.id]
-              )
-              }
-              className="w-full flex items-center gap-2 px-2 py-1.5 text-sm hover:bg-gray-50 rounded">
-
-                  <div
-                className={`w-4 h-4 border rounded flex items-center justify-center ${selected.includes(opt.id) ? 'bg-blue-600 border-blue-600' : 'border-gray-300'}`}>
-
-                    {selected.includes(opt.id) &&
-                <Check className="w-3 h-3 text-white" />
-                }
-                  </div>
-                  <span
-                className="w-2 h-2 rounded-full"
-                style={{
-                  backgroundColor: opt.color
-                }} />
-
-                  {opt.name}
-                </button>
-            )}
-            </div>
-          </div>
-        </>
-      }
-    </div>);
-
-};
 const BranchBadge = ({ branchId }: {branchId: string;}) => {
   const branch = BRANCHES.find((b) => b.id === branchId);
   if (!branch) return null;
@@ -514,8 +417,8 @@ const BranchBadge = ({ branchId }: {branchId: string;}) => {
 };
 // --- Main Component ---
 export function CashBook() {
-  const [selectedBranches, setSelectedBranches] = useState<string[]>(['main']);
-  const [selectedBatch, setSelectedBatch] = useState('2024-25');
+  const [selectedBranches] = useState<string[]>(['main']);
+  const [selectedBatch] = useState('2024-25');
   const [isFilterExpanded, setIsFilterExpanded] = useState(true);
   const [filters, setFilters] = useState<FilterState>(initialFilters);
   const [appliedFilters, setAppliedFilters] =
@@ -901,17 +804,6 @@ export function CashBook() {
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-3">
-          <MultiSelect
-            options={BRANCHES}
-            selected={selectedBranches}
-            onChange={setSelectedBranches} />
-
-          <Select
-            value={selectedBatch}
-            onChange={setSelectedBatch}
-            options={BATCHES}
-            className="min-w-[120px]" />
-
           <Button
             variant="primary"
             size="sm"
@@ -938,8 +830,6 @@ export function CashBook() {
           </Button>
         </div>
       </div>
-
-      <ReportFilters className="print:hidden" />
 
       {/* Active Filters */}
       {selectedBranches.length > 0 &&

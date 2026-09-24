@@ -6,6 +6,9 @@ import React, {
   createElement,
   Component } from
 'react';
+import { FeeDefaulterList } from './FeeDefaulterList';
+import { FeeDiscountExemptionReport } from './FeeDiscountExemptionReport';
+import { FeeComplianceReporting } from './FeeHeadwiseCollectionSummary';
 import { Card } from '../../../components/ui/Card';
 import { Button } from '../../../components/ui/Button';
 import { Input } from '../../../components/ui/Input';
@@ -1948,6 +1951,42 @@ export function FeeCollectionReports() {
           </p>
         </Card>
       }
+    </div>);
+
+}
+
+// ============================================
+// Combined Fee Reports page - merges every Report Criteria screen
+// into a single tabbed page.
+// ============================================
+export function FeeReportsPage() {
+  const [activeReport, setActiveReport] = useState('collection');
+  const reports = [
+  { id: 'collection', label: 'Fee Collection Reports' },
+  { id: 'defaulter', label: 'Fee Defaulter List' },
+  { id: 'discount', label: 'Fee Discount & Exemption' },
+  { id: 'headwise', label: 'Fee Headwise Summary' }];
+
+  return (
+    <div className="space-y-4">
+      <Card className="p-2">
+        <div className="flex flex-wrap gap-2">
+          {reports.map((r) =>
+          <Button
+            key={r.id}
+            variant={activeReport === r.id ? 'primary' : 'outline'}
+            size="sm"
+            onClick={() => setActiveReport(r.id)}>
+
+              {r.label}
+            </Button>
+          )}
+        </div>
+      </Card>
+      {activeReport === 'collection' && <FeeCollectionReports />}
+      {activeReport === 'defaulter' && <FeeDefaulterList />}
+      {activeReport === 'discount' && <FeeDiscountExemptionReport />}
+      {activeReport === 'headwise' && <FeeComplianceReporting />}
     </div>);
 
 }

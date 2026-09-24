@@ -1,4 +1,4 @@
-import React, { useMemo, useState, Fragment } from 'react';
+import React, { useMemo, useState, Fragment } from 'react'
 import {
   Search,
   Printer,
@@ -13,13 +13,9 @@ import {
   Calendar,
   CreditCard,
   CheckCircle,
-  AlertCircle,
-  Clock,
-  Filter,
   Receipt,
   Phone,
   Mail,
-  Bus,
   Home,
   Award,
   Percent,
@@ -33,673 +29,419 @@ import {
   AlertTriangle,
   Banknote,
   BadgePercent,
-  Timer,
   MessageSquare,
-  Send,
   XCircle,
-  RefreshCw,
   BookOpen,
   Wallet,
-  Save,
-  Edit3,
-  Lock,
-  Unlock } from
-'lucide-react';
-import { ReportFilters } from '../../../components/ReportFilters';
+  ArrowLeft,
+  MapPin,
+  Users,
+  Globe,
+  Heart,
+  Shield,
+  ChevronRight,
+  Bus,
+  Smartphone,
+  Bell,
+} from 'lucide-react'
+
 // ============================================
 // TYPE DEFINITIONS
 // ============================================
 interface FeeHead {
-  id: string;
-  name: string;
-  amount: number;
-  discountAmount: number;
-  netAmount: number;
+  id: string
+  name: string
+  amount: number
+  discountAmount: number
+  netAmount: number
 }
-interface Installment {
-  id: string;
-  installmentNo: number;
-  installmentName: string;
-  dueDate: string;
-  feeHeads: FeeHead[];
-  totalAmount: number;
-  totalDiscount: number;
-  netAmount: number;
-  paidAmount: number;
-  balanceAmount: number;
-  fineAmount: number;
-  finePaid: number;
-  fineBalance: number;
-  totalDue: number;
-  status: 'paid' | 'unpaid' | 'partial' | 'overdue';
-  paidDate?: string;
-  daysOverdue: number;
-}
+
 interface ReceiptHistory {
-  id: string;
-  receiptNo: string;
-  date: string;
-  amount: number;
-  fineAmount: number;
-  discountAmount: number;
-  totalAmount: number;
-  paymentMode: string;
-  referenceNo?: string;
-  installments: {
-    installmentName: string;
-    feeAmount: number;
-    fineAmount: number;
-    discountAmount: number;
-  }[];
-  status: 'completed' | 'cancelled' | 'refunded';
-  generatedBy: string;
-  remarks?: string;
-  cancelledBy?: string;
-  cancelledDate?: string;
-  cancelReason?: string;
-  smsSent: boolean;
-  emailSent: boolean;
-  ledgerPosted: boolean;
+  id: string
+  receiptNo: string
+  date: string
+  amount: number
+  fineAmount: number
+  totalAmount: number
+  paymentMode: string
+  referenceNo?: string
+  feeHeads: {
+    feeHeadName: string
+    feeAmount: number
+  }[]
+  fineDetails?: {
+    fineAmount: number
+  }
+  status: 'completed' | 'cancelled' | 'refunded'
+  generatedBy: string
+  remarks?: string
+  smsSent: boolean
+  emailSent: boolean
+  whatsappSent: boolean
+  inAppSent: boolean
+  ledgerPosted: boolean
 }
+
+interface StudentFeeData {
+  feeHeads: FeeHead[]
+  totalAmount: number
+  totalDiscount: number
+  netAmount: number
+  paidAmount: number
+  balanceAmount: number
+  fineAmount: number
+  finePaid: number
+  fineBalance: number
+  totalDue: number
+  status: 'paid' | 'unpaid' | 'partial' | 'overdue'
+  paidDate?: string
+  daysOverdue: number
+  feeHeadPaidAmounts: Record<string, number>
+}
+
 interface StudentData {
-  id: string;
-  admissionNo: string;
-  grNo: string;
-  suId: string;
-  firstName: string;
-  middleName: string;
-  lastName: string;
-  class: string;
-  section: string;
-  department: string;
-  rollNo: string;
-  dateOfBirth: string;
-  gender: string;
-  address: string;
-  parentName: string;
-  parentPhone: string;
-  parentEmail: string;
-  academicYear: string;
-  hasTransport: boolean;
-  transportRoute?: string;
-  hasHostel: boolean;
-  hasConcession: boolean;
-  concessionType?: string;
-  concessionPercentage?: number;
-  hasScholarship: boolean;
-  scholarshipName?: string;
-  scholarshipAmount?: number;
-  feeCategory: string;
-  installments: Installment[];
-  receiptHistory: ReceiptHistory[];
+  id: string
+  admissionNo: string
+  grNo: string
+  suId: string
+  firstName: string
+  middleName: string
+  lastName: string
+  class: string
+  section: string
+  department: string
+  branch: string
+  rollNo: string
+  dateOfBirth: string
+  gender: string
+  bloodGroup: string
+  nationality: string
+  religion: string
+  category: string
+  aadharNo: string
+  address: string
+  city: string
+  state: string
+  pincode: string
+  parentName: string
+  parentPhone: string
+  parentEmail: string
+  motherName: string
+  motherPhone: string
+  academicYear: string
+  admissionDate: string
+  medium: string
+  stream: string
+  hasTransport: boolean
+  hasHostel: boolean
+  hostelRoom?: string
+  hasConcession: boolean
+  concessionType?: string
+  concessionPercentage?: number
+  hasScholarship: boolean
+  scholarshipName?: string
+  scholarshipAmount?: number
+  feeCategory: string
+  status: 'Active' | 'Inactive' | 'TC Issued' | 'Suspended'
+  feeData: StudentFeeData
+  receiptHistory: ReceiptHistory[]
 }
+
 interface SearchFilters {
-  searchType: 'admissionNo' | 'name' | 'class' | 'mobile';
-  searchValue: string;
-  admissionNo: string;
-  studentName: string;
-  class: string;
-  section: string;
-  mobileNo: string;
-  academicYear: string;
+  academicYear: string
+  masterFranchise: string
+  centre: string
+  class: string
+  division: string
+  gender: string
+  active: string
+  searchQuery: string
+  batch: string
+  term: string
 }
-interface PaymentEntry {
-  installmentId: string;
-  feeAmount: number;
-  fineAmount: number;
-  discountAmount: number;
-  discountReason: string;
-  totalAmount: number;
+
+interface FeeHeadPaymentEntry {
+  selected: boolean
+  payingAmount: number
+  balanceAmount: number
 }
+
 // ============================================
 // MOCK DATA
 // ============================================
-const getMockStudentData = (): StudentData => {
-  const today = new Date();
+const getMockStudentsList = (): StudentData[] => {
+  const today = new Date()
   const calculateDaysOverdue = (dueDate: string): number => {
-    const due = new Date(dueDate);
-    const diff = Math.floor(
-      (today.getTime() - due.getTime()) / (1000 * 60 * 60 * 24)
-    );
-    return diff > 0 ? diff : 0;
-  };
-  const calculateFine = (
-  dueDate: string,
-  amount: number,
-  gracePeriod: number = 7)
-  : number => {
-    const daysOverdue = calculateDaysOverdue(dueDate);
-    if (daysOverdue <= gracePeriod) return 0;
-    const effectiveDays = daysOverdue - gracePeriod;
-    const finePerDay = 50;
-    const maxFine = amount * 0.1;
-    return Math.min(effectiveDays * finePerDay, maxFine);
-  };
-  const installments: Installment[] = [
-  {
-    id: 'inst-1',
-    installmentNo: 1,
-    installmentName: 'Term 1 (Apr - Jun 2024)',
-    dueDate: '2024-04-15',
-    feeHeads: [
-    {
-      id: 'fh1',
-      name: 'Tuition Fee',
-      amount: 25000,
-      discountAmount: 3750,
-      netAmount: 21250
-    },
-    {
-      id: 'fh2',
-      name: 'Development Fee',
-      amount: 5000,
-      discountAmount: 750,
-      netAmount: 4250
-    },
-    {
-      id: 'fh3',
-      name: 'Computer Lab Fee',
-      amount: 2500,
-      discountAmount: 375,
-      netAmount: 2125
-    },
-    {
-      id: 'fh4',
-      name: 'Science Lab Fee',
-      amount: 2000,
-      discountAmount: 300,
-      netAmount: 1700
-    },
-    {
-      id: 'fh5',
-      name: 'Library Fee',
-      amount: 1000,
-      discountAmount: 0,
-      netAmount: 1000
-    }],
+    const due = new Date(dueDate)
+    const diff = Math.floor((today.getTime() - due.getTime()) / (1000 * 60 * 60 * 24))
+    return diff > 0 ? diff : 0
+  }
+  const calculateFine = (dueDate: string, amount: number, gracePeriod = 7): number => {
+    const daysOverdue = calculateDaysOverdue(dueDate)
+    if (daysOverdue <= gracePeriod) return 0
+    const effectiveDays = daysOverdue - gracePeriod
+    return Math.min(effectiveDays * 50, amount * 0.1)
+  }
 
-    totalAmount: 35500,
-    totalDiscount: 5175,
-    netAmount: 30325,
-    paidAmount: 30325,
-    balanceAmount: 0,
-    fineAmount: 0,
-    finePaid: 0,
-    fineBalance: 0,
-    totalDue: 0,
-    status: 'paid',
-    paidDate: '2024-04-10',
-    daysOverdue: 0
-  },
-  {
-    id: 'inst-2',
-    installmentNo: 2,
-    installmentName: 'Term 2 (Jul - Sep 2024)',
-    dueDate: '2024-07-15',
-    feeHeads: [
-    {
-      id: 'fh6',
-      name: 'Tuition Fee',
-      amount: 25000,
-      discountAmount: 3750,
-      netAmount: 21250
-    },
-    {
-      id: 'fh7',
-      name: 'Development Fee',
-      amount: 5000,
-      discountAmount: 750,
-      netAmount: 4250
-    },
-    {
-      id: 'fh8',
-      name: 'Computer Lab Fee',
-      amount: 2500,
-      discountAmount: 375,
-      netAmount: 2125
-    },
-    {
-      id: 'fh9',
-      name: 'Science Lab Fee',
-      amount: 2000,
-      discountAmount: 300,
-      netAmount: 1700
-    },
-    {
-      id: 'fh10',
-      name: 'Examination Fee',
-      amount: 1500,
-      discountAmount: 0,
-      netAmount: 1500
-    }],
+  const createFeeData = (studentId: string): StudentFeeData => {
+    const prefix = studentId === '1' ? 'fh' : studentId === '2' ? 'fh2_' : 'fh3_'
+    const hasConcession = studentId === '1'
 
-    totalAmount: 36000,
-    totalDiscount: 5175,
-    netAmount: 30825,
-    paidAmount: 15000,
-    balanceAmount: 15825,
-    fineAmount: calculateFine('2024-07-15', 15825),
-    finePaid: 0,
-    fineBalance: calculateFine('2024-07-15', 15825),
-    totalDue: 15825 + calculateFine('2024-07-15', 15825),
-    status: 'partial',
-    paidDate: '2024-07-20',
-    daysOverdue: calculateDaysOverdue('2024-07-15')
-  },
-  {
-    id: 'inst-3',
-    installmentNo: 3,
-    installmentName: 'Term 3 (Oct - Dec 2024)',
-    dueDate: '2024-10-15',
-    feeHeads: [
-    {
-      id: 'fh11',
-      name: 'Tuition Fee',
-      amount: 25000,
-      discountAmount: 3750,
-      netAmount: 21250
-    },
-    {
-      id: 'fh12',
-      name: 'Development Fee',
-      amount: 5000,
-      discountAmount: 750,
-      netAmount: 4250
-    },
-    {
-      id: 'fh13',
-      name: 'Computer Lab Fee',
-      amount: 2500,
-      discountAmount: 375,
-      netAmount: 2125
-    },
-    {
-      id: 'fh14',
-      name: 'Science Lab Fee',
-      amount: 2000,
-      discountAmount: 300,
-      netAmount: 1700
-    },
-    {
-      id: 'fh15',
-      name: 'Sports Fee',
-      amount: 2000,
-      discountAmount: 0,
-      netAmount: 2000
-    }],
+    const feeHeads: FeeHead[] = [
+      { id: `${prefix}1`, name: 'Tuition Fee', amount: 100000, discountAmount: hasConcession ? 15000 : 0, netAmount: hasConcession ? 85000 : 100000 },
+      { id: `${prefix}2`, name: 'Development Fee', amount: 20000, discountAmount: hasConcession ? 3000 : 0, netAmount: hasConcession ? 17000 : 20000 },
+      { id: `${prefix}3`, name: 'Computer Lab Fee', amount: 10000, discountAmount: hasConcession ? 1500 : 0, netAmount: hasConcession ? 8500 : 10000 },
+      { id: `${prefix}4`, name: 'Science Lab Fee', amount: 8000, discountAmount: hasConcession ? 1200 : 0, netAmount: hasConcession ? 6800 : 8000 },
+      { id: `${prefix}5`, name: 'Library Fee', amount: 4000, discountAmount: 0, netAmount: 4000 },
+      { id: `${prefix}6`, name: 'Examination Fee', amount: 6000, discountAmount: 0, netAmount: 6000 },
+      { id: `${prefix}7`, name: 'Sports Fee', amount: 5000, discountAmount: 0, netAmount: 5000 },
+      { id: `${prefix}8`, name: 'Annual Day Fee', amount: 3000, discountAmount: 0, netAmount: 3000 },
+    ]
 
-    totalAmount: 36500,
-    totalDiscount: 5175,
-    netAmount: 31325,
-    paidAmount: 0,
-    balanceAmount: 31325,
-    fineAmount: 0,
-    finePaid: 0,
-    fineBalance: 0,
-    totalDue: 31325,
-    status: 'unpaid',
-    daysOverdue: 0
-  },
-  {
-    id: 'inst-4',
-    installmentNo: 4,
-    installmentName: 'Term 4 (Jan - Mar 2025)',
-    dueDate: '2025-01-15',
-    feeHeads: [
-    {
-      id: 'fh16',
-      name: 'Tuition Fee',
-      amount: 25000,
-      discountAmount: 3750,
-      netAmount: 21250
-    },
-    {
-      id: 'fh17',
-      name: 'Development Fee',
-      amount: 5000,
-      discountAmount: 750,
-      netAmount: 4250
-    },
-    {
-      id: 'fh18',
-      name: 'Computer Lab Fee',
-      amount: 2500,
-      discountAmount: 375,
-      netAmount: 2125
-    },
-    {
-      id: 'fh19',
-      name: 'Science Lab Fee',
-      amount: 2000,
-      discountAmount: 300,
-      netAmount: 1700
-    },
-    {
-      id: 'fh20',
-      name: 'Annual Day Fee',
-      amount: 1500,
-      discountAmount: 0,
-      netAmount: 1500
-    },
-    {
-      id: 'fh21',
-      name: 'Examination Fee',
-      amount: 2000,
-      discountAmount: 0,
-      netAmount: 2000
-    }],
+    const totalAmount = feeHeads.reduce((s, fh) => s + fh.amount, 0)
+    const totalDiscount = feeHeads.reduce((s, fh) => s + fh.discountAmount, 0)
+    const netAmount = feeHeads.reduce((s, fh) => s + fh.netAmount, 0)
 
-    totalAmount: 38000,
-    totalDiscount: 5175,
-    netAmount: 32825,
-    paidAmount: 0,
-    balanceAmount: 32825,
-    fineAmount: 0,
-    finePaid: 0,
-    fineBalance: 0,
-    totalDue: 32825,
-    status: 'unpaid',
-    daysOverdue: 0
-  },
-  {
-    id: 'inst-transport-1',
-    installmentNo: 5,
-    installmentName: 'Transport Fee - H1 (Apr - Sep 2024)',
-    dueDate: '2024-04-30',
-    feeHeads: [
-    {
-      id: 'fh22',
-      name: 'Transport Fee (6 Months)',
-      amount: 18000,
-      discountAmount: 0,
-      netAmount: 18000
-    }],
+    let paidAmount = 0
+    const feeHeadPaidAmounts: Record<string, number> = {}
 
-    totalAmount: 18000,
-    totalDiscount: 0,
-    netAmount: 18000,
-    paidAmount: 18000,
-    balanceAmount: 0,
-    fineAmount: 0,
-    finePaid: 0,
-    fineBalance: 0,
-    totalDue: 0,
-    status: 'paid',
-    paidDate: '2024-04-25',
-    daysOverdue: 0
-  },
-  {
-    id: 'inst-transport-2',
-    installmentNo: 6,
-    installmentName: 'Transport Fee - H2 (Oct - Mar 2025)',
-    dueDate: '2024-10-31',
-    feeHeads: [
-    {
-      id: 'fh23',
-      name: 'Transport Fee (6 Months)',
-      amount: 18000,
-      discountAmount: 0,
-      netAmount: 18000
-    }],
+    if (studentId === '1') {
+      feeHeadPaidAmounts[`${prefix}1`] = 50000
+      feeHeadPaidAmounts[`${prefix}2`] = 10000
+      feeHeadPaidAmounts[`${prefix}3`] = 8500
+      feeHeadPaidAmounts[`${prefix}4`] = 6800
+      feeHeadPaidAmounts[`${prefix}5`] = 4000
+      feeHeadPaidAmounts[`${prefix}6`] = 0
+      feeHeadPaidAmounts[`${prefix}7`] = 0
+      feeHeadPaidAmounts[`${prefix}8`] = 0
+      paidAmount = 79300
+    } else if (studentId === '2') {
+      feeHeadPaidAmounts[`${prefix}1`] = 100000
+      feeHeadPaidAmounts[`${prefix}2`] = 20000
+      feeHeadPaidAmounts[`${prefix}3`] = 10000
+      feeHeadPaidAmounts[`${prefix}4`] = 8000
+      feeHeadPaidAmounts[`${prefix}5`] = 4000
+      feeHeadPaidAmounts[`${prefix}6`] = 6000
+      feeHeadPaidAmounts[`${prefix}7`] = 5000
+      feeHeadPaidAmounts[`${prefix}8`] = 3000
+      paidAmount = 156000
+    } else {
+      feeHeads.forEach((fh) => { feeHeadPaidAmounts[fh.id] = 0 })
+      paidAmount = 0
+    }
 
-    totalAmount: 18000,
-    totalDiscount: 0,
-    netAmount: 18000,
-    paidAmount: 0,
-    balanceAmount: 18000,
-    fineAmount: 0,
-    finePaid: 0,
-    fineBalance: 0,
-    totalDue: 18000,
-    status: 'unpaid',
-    daysOverdue: 0
-  }];
+    const balanceAmount = netAmount - paidAmount
+    const dueDate = '2024-07-15'
+    const daysOverdue = balanceAmount > 0 ? calculateDaysOverdue(dueDate) : 0
+    const fineAmount = balanceAmount > 0 ? calculateFine(dueDate, balanceAmount) : 0
 
-  return {
-    id: '1',
-    admissionNo: 'ADM2024001',
-    grNo: 'GR2024001',
-    suId: 'SU12345678',
-    firstName: 'Rahul',
-    middleName: 'Kumar',
-    lastName: 'Sharma',
-    class: '10',
-    section: 'A',
-    department: 'Science',
-    rollNo: '15',
-    dateOfBirth: '2009-05-15',
-    gender: 'Male',
-    address: '123, Green Park, Sector 22, New Delhi - 110001',
-    parentName: 'Mr. Amit Sharma',
-    parentPhone: '+91 98765 43210',
-    parentEmail: 'amit.sharma@email.com',
-    academicYear: '2024-25',
-    hasTransport: true,
-    transportRoute: 'Route 5 - Sector 22 to School',
-    hasHostel: false,
-    hasConcession: true,
-    concessionType: 'Staff Ward Concession',
-    concessionPercentage: 15,
-    hasScholarship: true,
-    scholarshipName: 'Merit Scholarship',
-    scholarshipAmount: 5000,
-    feeCategory: 'General',
-    installments,
-    receiptHistory: [
+    let status: 'paid' | 'unpaid' | 'partial' | 'overdue' = 'unpaid'
+    if (paidAmount >= netAmount) status = 'paid'
+    else if (paidAmount > 0) status = daysOverdue > 7 ? 'overdue' : 'partial'
+    else status = daysOverdue > 7 ? 'overdue' : 'unpaid'
+
+    return {
+      feeHeads,
+      totalAmount,
+      totalDiscount,
+      netAmount,
+      paidAmount,
+      balanceAmount,
+      fineAmount,
+      finePaid: 0,
+      fineBalance: fineAmount,
+      totalDue: balanceAmount + fineAmount,
+      status,
+      paidDate: paidAmount > 0 ? '2024-07-20' : undefined,
+      daysOverdue,
+      feeHeadPaidAmounts,
+    }
+  }
+
+  return [
     {
-      id: 'rcpt1',
-      receiptNo: 'RCP2024/001234',
-      date: '2024-04-10',
-      amount: 68875,
-      fineAmount: 0,
-      discountAmount: 0,
-      totalAmount: 68875,
-      paymentMode: 'Online Transfer',
-      referenceNo: 'TXN123456789',
-      installments: [
-      {
-        installmentName: 'Term 1 (Apr - Jun 2024)',
-        feeAmount: 30325,
-        fineAmount: 0,
-        discountAmount: 0
-      },
-      {
-        installmentName: 'Transport Fee - H1',
-        feeAmount: 18000,
-        fineAmount: 0,
-        discountAmount: 0
+      id: '1', admissionNo: 'ADM2024001', grNo: 'GR2024001', suId: 'SU12345678',
+      firstName: 'Rahul', middleName: 'Kumar', lastName: 'Sharma',
+      class: '10', section: 'A', department: 'Science', branch: 'Main Campus', rollNo: '15',
+      dateOfBirth: '2009-05-15', gender: 'Male', bloodGroup: 'B+',
+      nationality: 'Indian', religion: 'Hindu', category: 'General',
+      aadharNo: '1234-5678-9012', address: '123, Green Park, Sector 22',
+      city: 'New Delhi', state: 'Delhi', pincode: '110001',
+      parentName: 'Mr. Amit Kumar Sharma', parentPhone: '+91 98765 43210', parentEmail: 'amit.sharma@email.com',
+      motherName: 'Mrs. Priya Sharma', motherPhone: '+91 98765 43211',
+      academicYear: '2024-25', admissionDate: '2020-04-01',
+      medium: 'English', stream: 'Science (PCM)',
+      hasTransport: true, hasHostel: false,
+      hasConcession: true, concessionType: 'Staff Ward Concession', concessionPercentage: 15,
+      hasScholarship: true, scholarshipName: 'Merit Scholarship', scholarshipAmount: 5000,
+      feeCategory: 'General', status: 'Active',
+      feeData: createFeeData('1'),
+      receiptHistory: [
+        {
+          id: 'rcpt1', receiptNo: 'RCP2024/001234', date: '2024-04-10',
+          amount: 30325, fineAmount: 0, totalAmount: 30325,
+          paymentMode: 'Online Transfer', referenceNo: 'TXN123456789',
+          feeHeads: [
+            { feeHeadName: 'Tuition Fee', feeAmount: 21250 },
+            { feeHeadName: 'Development Fee', feeAmount: 4250 },
+            { feeHeadName: 'Computer Lab Fee', feeAmount: 2125 },
+            { feeHeadName: 'Science Lab Fee', feeAmount: 1700 },
+            { feeHeadName: 'Library Fee', feeAmount: 1000 },
+          ],
+          status: 'completed', generatedBy: 'Admin', smsSent: true, emailSent: true, whatsappSent: false, inAppSent: true, ledgerPosted: true,
+        },
+        {
+          id: 'rcpt2', receiptNo: 'RCP2024/002456', date: '2024-07-20',
+          amount: 48975, fineAmount: 0, totalAmount: 48975,
+          paymentMode: 'UPI', referenceNo: 'UPI/789456123',
+          feeHeads: [
+            { feeHeadName: 'Tuition Fee', feeAmount: 28750 },
+            { feeHeadName: 'Development Fee', feeAmount: 5750 },
+            { feeHeadName: 'Computer Lab Fee', feeAmount: 6375 },
+            { feeHeadName: 'Science Lab Fee', feeAmount: 5100 },
+            { feeHeadName: 'Library Fee', feeAmount: 3000 },
+          ],
+          status: 'completed', generatedBy: 'Fee Counter 1', smsSent: true, emailSent: false, whatsappSent: true, inAppSent: false, ledgerPosted: true,
+        },
+      ],
+    },
+    {
+      id: '2', admissionNo: 'ADM2024002', grNo: 'GR2024002', suId: 'SU12345679',
+      firstName: 'Priya', middleName: '', lastName: 'Patel',
+      class: '10', section: 'A', department: 'Science', branch: 'Main Campus', rollNo: '22',
+      dateOfBirth: '2009-08-22', gender: 'Female', bloodGroup: 'A+',
+      nationality: 'Indian', religion: 'Hindu', category: 'OBC',
+      aadharNo: '2345-6789-0123', address: '45, Lajpat Nagar, Phase 2',
+      city: 'New Delhi', state: 'Delhi', pincode: '110024',
+      parentName: 'Mr. Ramesh Patel', parentPhone: '+91 99876 54321', parentEmail: 'ramesh.patel@email.com',
+      motherName: 'Mrs. Sunita Patel', motherPhone: '+91 99876 54322',
+      academicYear: '2024-25', admissionDate: '2019-04-01',
+      medium: 'English', stream: 'Science (PCB)',
+      hasTransport: false, hasHostel: false,
+      hasConcession: false, hasScholarship: true, scholarshipName: 'Merit-cum-Means', scholarshipAmount: 10000,
+      feeCategory: 'General', status: 'Active', branch: 'East Wing',
+      feeData: createFeeData('2'),
+      receiptHistory: [{
+        id: 'rcpt3', receiptNo: 'RCP2024/001235', date: '2024-04-08',
+        amount: 156000, fineAmount: 0, totalAmount: 156000,
+        paymentMode: 'Cheque', referenceNo: 'CHQ/456789',
+        feeHeads: [
+          { feeHeadName: 'Tuition Fee', feeAmount: 100000 },
+          { feeHeadName: 'Development Fee', feeAmount: 20000 },
+          { feeHeadName: 'Computer Lab Fee', feeAmount: 10000 },
+          { feeHeadName: 'Science Lab Fee', feeAmount: 8000 },
+          { feeHeadName: 'Library Fee', feeAmount: 4000 },
+          { feeHeadName: 'Examination Fee', feeAmount: 6000 },
+          { feeHeadName: 'Sports Fee', feeAmount: 5000 },
+          { feeHeadName: 'Annual Day Fee', feeAmount: 3000 },
+        ],
+        status: 'completed', generatedBy: 'Admin', smsSent: true, emailSent: true, whatsappSent: true, inAppSent: true, ledgerPosted: true,
       }],
-
-      status: 'completed',
-      generatedBy: 'Admin User',
-      remarks: 'Term 1 + Transport H1 payment',
-      smsSent: true,
-      emailSent: true,
-      ledgerPosted: true
     },
     {
-      id: 'rcpt2',
-      receiptNo: 'RCP2024/002456',
-      date: '2024-07-20',
-      amount: 15000,
-      fineAmount: 0,
-      discountAmount: 0,
-      totalAmount: 15000,
-      paymentMode: 'UPI',
-      referenceNo: 'UPI/789456123',
-      installments: [
-      {
-        installmentName: 'Term 2 - Partial',
-        feeAmount: 15000,
-        fineAmount: 0,
-        discountAmount: 0
-      }],
+      id: '3', admissionNo: 'ADM2024003', grNo: 'GR2024003', suId: 'SU12345680',
+      firstName: 'Arjun', middleName: 'Singh', lastName: 'Rajput',
+      class: '10', section: 'B', department: 'Commerce', branch: 'West Wing', rollNo: '08',
+      dateOfBirth: '2009-02-10', gender: 'Male', bloodGroup: 'O+',
+      nationality: 'Indian', religion: 'Hindu', category: 'General',
+      aadharNo: '3456-7890-1234', address: '78, Dwarka, Sector 7',
+      city: 'New Delhi', state: 'Delhi', pincode: '110075',
+      parentName: 'Mr. Vikram Singh', parentPhone: '+91 88765 43210', parentEmail: 'vikram.rajput@email.com',
+      motherName: 'Mrs. Kavita Rajput', motherPhone: '+91 88765 43211',
+      academicYear: '2024-25', admissionDate: '2021-04-01',
+      medium: 'English', stream: 'Commerce',
+      hasTransport: true, hasHostel: true, hostelRoom: 'Room 205, Block B',
+      hasConcession: true, concessionType: 'Defence Ward', concessionPercentage: 25,
+      hasScholarship: false, feeCategory: 'Defence', status: 'Active',
+      feeData: createFeeData('3'),
+      receiptHistory: [],
+    },
+    {
+      id: '4', admissionNo: 'ADM2024004', grNo: 'GR2024004', suId: 'SU12345681',
+      firstName: 'Sneha', middleName: '', lastName: 'Gupta',
+      class: '9', section: 'A', department: 'Science', branch: 'Main Campus', rollNo: '12',
+      dateOfBirth: '2010-11-03', gender: 'Female', bloodGroup: 'AB+',
+      nationality: 'Indian', religion: 'Hindu', category: 'General',
+      aadharNo: '4567-8901-2345', address: '34, Saket, J Block',
+      city: 'New Delhi', state: 'Delhi', pincode: '110017',
+      parentName: 'Mr. Arun Gupta', parentPhone: '+91 77654 32100', parentEmail: 'arun.gupta@email.com',
+      motherName: 'Mrs. Neha Gupta', motherPhone: '+91 77654 32101',
+      academicYear: '2024-25', admissionDate: '2022-04-01',
+      medium: 'English', stream: 'Science (PCM)',
+      hasTransport: false, hasHostel: false,
+      hasConcession: false, hasScholarship: false,
+      feeCategory: 'General', status: 'Active',
+      feeData: createFeeData('2'),
+      receiptHistory: [],
+    },
+    {
+      id: '5', admissionNo: 'ADM2024005', grNo: 'GR2024005', suId: 'SU12345682',
+      firstName: 'Mohammed', middleName: '', lastName: 'Khan',
+      class: '10', section: 'B', department: 'Science', branch: 'East Wing', rollNo: '18',
+      dateOfBirth: '2009-06-25', gender: 'Male', bloodGroup: 'B-',
+      nationality: 'Indian', religion: 'Islam', category: 'Minority',
+      aadharNo: '5678-9012-3456', address: '12, Jamia Nagar',
+      city: 'New Delhi', state: 'Delhi', pincode: '110025',
+      parentName: 'Mr. Salim Khan', parentPhone: '+91 66543 21000', parentEmail: 'salim.khan@email.com',
+      motherName: 'Mrs. Fatima Khan', motherPhone: '+91 66543 21001',
+      academicYear: '2024-25', admissionDate: '2020-04-01',
+      medium: 'English', stream: 'Science (PCM)',
+      hasTransport: true, hasHostel: false,
+      hasConcession: true, concessionType: 'Minority', concessionPercentage: 10,
+      hasScholarship: true, scholarshipName: 'National Merit', scholarshipAmount: 15000,
+      feeCategory: 'Minority', status: 'Active',
+      feeData: createFeeData('2'),
+      receiptHistory: [],
+    },
+  ]
+}
 
-      status: 'completed',
-      generatedBy: 'Fee Counter 1',
-      remarks: 'Partial payment for Term 2',
-      smsSent: true,
-      emailSent: false,
-      ledgerPosted: true
-    }]
-
-  };
-};
 // ============================================
-// COMPONENT OPTIONS
+// PAYMENT MODE OPTIONS
 // ============================================
-const classOptions = [
-{
-  value: '',
-  label: 'Select Class'
-},
-{
-  value: 'nursery',
-  label: 'Nursery'
-},
-{
-  value: 'lkg',
-  label: 'LKG'
-},
-{
-  value: 'ukg',
-  label: 'UKG'
-},
-...Array.from(
-  {
-    length: 12
-  },
-  (_, i) => ({
-    value: String(i + 1),
-    label: `Class ${i + 1}`
-  })
-)];
-
-const sectionOptions = [
-{
-  value: '',
-  label: 'All Sections'
-},
-{
-  value: 'A',
-  label: 'Section A'
-},
-{
-  value: 'B',
-  label: 'Section B'
-},
-{
-  value: 'C',
-  label: 'Section C'
-},
-{
-  value: 'D',
-  label: 'Section D'
-}];
-
-const academicYearOptions = [
-{
-  value: '2024-25',
-  label: '2024-25'
-},
-{
-  value: '2023-24',
-  label: '2023-24'
-},
-{
-  value: '2022-23',
-  label: '2022-23'
-}];
-
 const paymentModeOptions = [
-{
-  value: 'cash',
-  label: 'Cash'
-},
-{
-  value: 'upi',
-  label: 'UPI'
-},
-{
-  value: 'card',
-  label: 'Debit/Credit Card'
-},
-{
-  value: 'cheque',
-  label: 'Cheque'
-},
-{
-  value: 'neft',
-  label: 'NEFT/RTGS/IMPS'
-},
-{
-  value: 'dd',
-  label: 'Demand Draft'
-}];
-
-const searchTypeOptions = [
-{
-  value: 'admissionNo',
-  label: 'Admission No'
-},
-{
-  value: 'name',
-  label: 'Student Name'
-},
-{
-  value: 'class',
-  label: 'Class'
-},
-{
-  value: 'mobile',
-  label: 'Mobile Number'
-}];
+  { value: 'cash', label: 'Cash' },
+  { value: 'upi', label: 'UPI' },
+  { value: 'card', label: 'Debit/Credit Card' },
+  { value: 'cheque', label: 'Cheque' },
+  { value: 'neft', label: 'NEFT/RTGS/IMPS' },
+  { value: 'dd', label: 'Demand Draft' },
+  { value: 'bank_transfer', label: 'Bank Transfer' },
+]
 
 // ============================================
 // HELPER COMPONENTS
 // ============================================
 const Card: React.FC<{
-  children: React.ReactNode;
-  className?: string;
-  title?: string;
-  subtitle?: string;
-  action?: React.ReactNode;
-}> = ({ children, className = '', title, subtitle, action }) =>
-<div
-  className={`bg-white rounded-lg shadow-sm border border-gray-200 ${className}`}>
-
-    {(title || action) &&
-  <div className="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
+  children: React.ReactNode
+  className?: string
+  title?: string
+  subtitle?: string
+  action?: React.ReactNode
+}> = ({ children, className = '', title, subtitle, action }) => (
+  <div className={`bg-white rounded-lg shadow-sm border border-gray-200 ${className}`}>
+    {(title || action) && (
+      <div className="px-4 py-3 border-b border-gray-200 flex items-center justify-between">
         <div>
-          {title &&
-      <h3 className="text-base font-semibold text-gray-900">{title}</h3>
-      }
-          {subtitle &&
-      <p className="text-xs text-gray-500 mt-0.5">{subtitle}</p>
-      }
+          {title && <h3 className="text-base font-semibold text-gray-900">{title}</h3>}
+          {subtitle && <p className="text-xs text-gray-500 mt-0.5">{subtitle}</p>}
         </div>
         {action}
       </div>
-  }
+    )}
     {children}
-  </div>;
+  </div>
+)
 
 const Button: React.FC<{
-  children: React.ReactNode;
-  variant?:
-  'primary' |
-  'secondary' |
-  'outline' |
-  'ghost' |
-  'danger' |
-  'success' |
-  'warning';
-  size?: 'xs' | 'sm' | 'md' | 'lg';
-  disabled?: boolean;
-  loading?: boolean;
-  className?: string;
-  onClick?: () => void;
-  type?: 'button' | 'submit';
+  children: React.ReactNode
+  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'success' | 'warning'
+  size?: 'xs' | 'sm' | 'md' | 'lg'
+  disabled?: boolean
+  loading?: boolean
+  className?: string
+  onClick?: () => void
+  type?: 'button' | 'submit'
 }> = ({
   children,
   variant = 'primary',
@@ -708,72 +450,61 @@ const Button: React.FC<{
   loading = false,
   className = '',
   onClick,
-  type = 'button'
+  type = 'button',
 }) => {
   const baseStyles =
-  'inline-flex items-center justify-center font-medium rounded-md transition-all focus:outline-none focus:ring-2 focus:ring-offset-1';
+    'inline-flex items-center justify-center font-medium rounded-md transition-all focus:outline-none focus:ring-2 focus:ring-offset-1'
   const variants = {
     primary: 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500',
-    secondary:
-    'bg-gray-100 text-gray-900 hover:bg-gray-200 focus:ring-gray-500',
-    outline:
-    'border border-gray-300 text-gray-700 hover:bg-gray-50 focus:ring-blue-500',
+    secondary: 'bg-gray-100 text-gray-900 hover:bg-gray-200 focus:ring-gray-500',
+    outline: 'border border-gray-300 text-gray-700 hover:bg-gray-50 focus:ring-blue-500',
     ghost: 'text-gray-600 hover:bg-gray-100 focus:ring-gray-500',
     danger: 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500',
     success: 'bg-green-600 text-white hover:bg-green-700 focus:ring-green-500',
-    warning: 'bg-amber-500 text-white hover:bg-amber-600 focus:ring-amber-500'
-  };
+    warning: 'bg-amber-500 text-white hover:bg-amber-600 focus:ring-amber-500',
+  }
   const sizes = {
     xs: 'px-2 py-1 text-xs',
     sm: 'px-2.5 py-1.5 text-xs',
     md: 'px-3 py-2 text-sm',
-    lg: 'px-4 py-2.5 text-sm'
-  };
+    lg: 'px-4 py-2.5 text-sm',
+  }
   return (
     <button
       type={type}
       className={`${baseStyles} ${variants[variant]} ${sizes[size]} ${disabled || loading ? 'opacity-50 cursor-not-allowed' : ''} ${className}`}
       disabled={disabled || loading}
-      onClick={onClick}>
-
-      {loading &&
-      <svg
-        className="animate-spin -ml-1 mr-1.5 h-3.5 w-3.5"
-        fill="none"
-        viewBox="0 0 24 24">
-
-          <circle
-          className="opacity-25"
-          cx="12"
-          cy="12"
-          r="10"
-          stroke="currentColor"
-          strokeWidth="4" />
-
+      onClick={onClick}
+    >
+      {loading && (
+        <svg className="animate-spin -ml-1 mr-1.5 h-3.5 w-3.5" fill="none" viewBox="0 0 24 24">
+          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
           <path
-          className="opacity-75"
-          fill="currentColor"
-          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-
+            className="opacity-75"
+            fill="currentColor"
+            d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+          />
         </svg>
-      }
+      )}
       {children}
-    </button>);
+    </button>
+  )
+}
 
-};
 const Input: React.FC<{
-  label?: string;
-  type?: string;
-  placeholder?: string;
-  value?: string | number;
-  onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  leftIcon?: React.ReactNode;
-  disabled?: boolean;
-  required?: boolean;
-  min?: number;
-  max?: number;
-  error?: string;
-  className?: string;
+  label?: string
+  type?: string
+  placeholder?: string
+  value?: string | number
+  onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void
+  leftIcon?: React.ReactNode
+  disabled?: boolean
+  required?: boolean
+  min?: number
+  max?: number
+  maxLength?: number
+  error?: string
+  className?: string
 }> = ({
   label,
   type = 'text',
@@ -785,122 +516,104 @@ const Input: React.FC<{
   required,
   min,
   max,
+  maxLength,
   error,
-  className = ''
-}) =>
-<div className={className}>
-    {label &&
-  <label className="block text-xs font-medium text-gray-700 mb-1">
+  className = '',
+}) => (
+  <div className={className}>
+    {label && (
+      <label className="block text-xs font-medium text-gray-700 mb-1">
         {label}
         {required && <span className="text-red-500 ml-0.5">*</span>}
       </label>
-  }
+    )}
     <div className="relative">
-      {leftIcon &&
-    <div className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400">
-          {leftIcon}
-        </div>
-    }
+      {leftIcon && (
+        <div className="absolute left-2.5 top-1/2 -translate-y-1/2 text-gray-400">{leftIcon}</div>
+      )}
       <input
-      type={type}
-      placeholder={placeholder}
+        type={type}
+        placeholder={placeholder}
+        value={value}
+        onChange={onChange}
+        disabled={disabled}
+        min={min}
+        max={max}
+        maxLength={maxLength}
+        className={`w-full rounded-md border ${error ? 'border-red-300' : 'border-gray-300'} px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 disabled:bg-gray-50 disabled:text-gray-500 ${leftIcon ? 'pl-8' : ''}`}
+      />
+    </div>
+    {error && <p className="text-xs text-red-600 mt-0.5">{error}</p>}
+  </div>
+)
+
+const Select: React.FC<{
+  label?: string
+  options: { value: string; label: string }[]
+  value?: string
+  onChange?: (e: React.ChangeEvent<HTMLSelectElement>) => void
+  disabled?: boolean
+  required?: boolean
+  className?: string
+}> = ({ label, options, value, onChange, disabled, required, className = '' }) => (
+  <div className={className}>
+    {label && (
+      <label className="block text-xs font-medium text-gray-700 mb-1">
+        {label}
+        {required && <span className="text-red-500 ml-0.5">*</span>}
+      </label>
+    )}
+    <select
       value={value}
       onChange={onChange}
       disabled={disabled}
-      min={min}
-      max={max}
-      className={`w-full rounded-md border ${error ? 'border-red-300' : 'border-gray-300'} px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 disabled:bg-gray-50 disabled:text-gray-500 ${leftIcon ? 'pl-8' : ''}`} />
-
-    </div>
-    {error && <p className="text-xs text-red-600 mt-0.5">{error}</p>}
-  </div>;
-
-const Select: React.FC<{
-  label?: string;
-  options: {
-    value: string;
-    label: string;
-  }[];
-  value?: string;
-  onChange?: (e: React.ChangeEvent<HTMLSelectElement>) => void;
-  disabled?: boolean;
-  required?: boolean;
-  className?: string;
-}> = ({
-  label,
-  options,
-  value,
-  onChange,
-  disabled,
-  required,
-  className = ''
-}) =>
-<div className={className}>
-    {label &&
-  <label className="block text-xs font-medium text-gray-700 mb-1">
-        {label}
-        {required && <span className="text-red-500 ml-0.5">*</span>}
-      </label>
-  }
-    <select
-    value={value}
-    onChange={onChange}
-    disabled={disabled}
-    className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 disabled:bg-gray-50 bg-white">
-
-      {options.map((opt) =>
-    <option key={opt.value} value={opt.value}>
+      className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500 disabled:bg-gray-50 bg-white"
+    >
+      {options.map((opt) => (
+        <option key={opt.value} value={opt.value}>
           {opt.label}
         </option>
-    )}
+      ))}
     </select>
-  </div>;
+  </div>
+)
 
 const Badge: React.FC<{
-  children: React.ReactNode;
-  variant?: 'success' | 'warning' | 'danger' | 'info' | 'gray';
-  size?: 'xs' | 'sm';
+  children: React.ReactNode
+  variant?: 'success' | 'warning' | 'danger' | 'info' | 'gray'
+  size?: 'xs' | 'sm'
 }> = ({ children, variant = 'gray', size = 'sm' }) => {
   const variants = {
     success: 'bg-green-100 text-green-700',
     warning: 'bg-amber-100 text-amber-700',
     danger: 'bg-red-100 text-red-700',
     info: 'bg-blue-100 text-blue-700',
-    gray: 'bg-gray-100 text-gray-700'
-  };
-  const sizes = {
-    xs: 'px-1.5 py-0.5 text-[10px]',
-    sm: 'px-2 py-0.5 text-xs'
-  };
+    gray: 'bg-gray-100 text-gray-700',
+  }
+  const sizes = { xs: 'px-1.5 py-0.5 text-[10px]', sm: 'px-2 py-0.5 text-xs' }
   return (
-    <span
-      className={`inline-flex items-center gap-1 rounded font-medium ${variants[variant]} ${sizes[size]}`}>
-
+    <span className={`inline-flex items-center gap-1 rounded font-medium ${variants[variant]} ${sizes[size]}`}>
       {children}
-    </span>);
+    </span>
+  )
+}
 
-};
 const Modal: React.FC<{
-  isOpen: boolean;
-  onClose: () => void;
-  title: string;
-  children: React.ReactNode;
-  size?: 'sm' | 'md' | 'lg' | 'xl';
+  isOpen: boolean
+  onClose: () => void
+  title: string
+  children: React.ReactNode
+  size?: 'sm' | 'md' | 'lg' | 'xl'
 }> = ({ isOpen, onClose, title, children, size = 'lg' }) => {
-  if (!isOpen) return null;
-  const sizes = {
-    sm: 'max-w-md',
-    md: 'max-w-lg',
-    lg: 'max-w-2xl',
-    xl: 'max-w-4xl'
-  };
+  if (!isOpen) return null
+  const sizes = { sm: 'max-w-md', md: 'max-w-lg', lg: 'max-w-2xl', xl: 'max-w-4xl' }
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
       <div className="flex min-h-full items-center justify-center p-4">
         <div className="fixed inset-0 bg-black/50" onClick={onClose} />
         <div
-          className={`relative bg-white rounded-lg shadow-xl w-full ${sizes[size]} max-h-[90vh] overflow-hidden flex flex-col`}>
-
+          className={`relative bg-white rounded-lg shadow-xl w-full ${sizes[size]} max-h-[90vh] overflow-hidden flex flex-col`}
+        >
           <div className="px-4 py-3 border-b flex items-center justify-between">
             <h2 className="text-lg font-semibold text-gray-900">{title}</h2>
             <button onClick={onClose} className="p-1 hover:bg-gray-100 rounded">
@@ -910,1217 +623,1439 @@ const Modal: React.FC<{
           <div className="overflow-y-auto flex-1">{children}</div>
         </div>
       </div>
-    </div>);
+    </div>
+  )
+}
 
-};
+// ============================================
+// UTILITY
+// ============================================
+function numberToWords(num: number): string {
+  const ones = [
+    '',
+    'One',
+    'Two',
+    'Three',
+    'Four',
+    'Five',
+    'Six',
+    'Seven',
+    'Eight',
+    'Nine',
+    'Ten',
+    'Eleven',
+    'Twelve',
+    'Thirteen',
+    'Fourteen',
+    'Fifteen',
+    'Sixteen',
+    'Seventeen',
+    'Eighteen',
+    'Nineteen',
+  ]
+  const tens = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety']
+  if (num === 0) return 'Zero'
+  const convert = (n: number): string => {
+    if (n === 0) return ''
+    if (n < 20) return ones[n]
+    if (n < 100) return tens[Math.floor(n / 10)] + (n % 10 ? ' ' + ones[n % 10] : '')
+    return ones[Math.floor(n / 100)] + ' Hundred' + (n % 100 ? ' ' + convert(n % 100) : '')
+  }
+  if (num >= 10000000) return convert(Math.floor(num / 10000000)) + ' Crore ' + numberToWords(num % 10000000)
+  if (num >= 100000) return convert(Math.floor(num / 100000)) + ' Lakh ' + numberToWords(num % 100000)
+  if (num >= 1000) return convert(Math.floor(num / 1000)) + ' Thousand ' + convert(num % 1000)
+  return convert(num)
+}
+
+const formatCurrency = (amount: number) =>
+  new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', minimumFractionDigits: 0 }).format(amount)
+
+const getStatusConfig = (status: string) => {
+  switch (status) {
+    case 'paid':
+      return { variant: 'success' as const, label: 'Paid' }
+    case 'partial':
+      return { variant: 'warning' as const, label: 'Partial' }
+    case 'overdue':
+      return { variant: 'danger' as const, label: 'Overdue' }
+    default:
+      return { variant: 'gray' as const, label: 'Unpaid' }
+  }
+}
+
+const getFeeHeadBalance = (feeData: StudentFeeData, feeHead: FeeHead): number => {
+  const alreadyPaid = feeData.feeHeadPaidAmounts[feeHead.id] || 0
+  return Math.max(0, feeHead.netAmount - alreadyPaid)
+}
+
+const getTodayFormatted = (): string => {
+  return new Date().toISOString().split('T')[0]
+}
+
+const getTodayDisplay = (): string => {
+  return new Date().toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })
+}
+
+const CompactRow: React.FC<{ icon: React.ReactNode; label: string; value: string }> = ({
+  icon,
+  label,
+  value,
+}) => (
+  <div className="flex items-center gap-1.5 py-0.5 min-w-0">
+    <span className="text-gray-400 flex-shrink-0">{icon}</span>
+    <div className="flex-1 min-w-0">
+      <div className="text-[9px] text-gray-500 leading-tight">{label}</div>
+      <div className="text-[11px] font-medium text-gray-900 truncate leading-tight" title={value}>
+        {value}
+      </div>
+    </div>
+  </div>
+)
+
 // ============================================
 // MAIN COMPONENT
 // ============================================
 export function FeeReceipt() {
-  // Search States
-  const [searchType, setSearchType] = useState<
-    'admissionNo' | 'name' | 'class' | 'mobile'>(
-    'admissionNo');
-  const [searchValue, setSearchValue] = useState('');
-  const [searchClass, setSearchClass] = useState('');
-  const [searchSection, setSearchSection] = useState('');
-  const [academicYear, setAcademicYear] = useState('2024-25');
-  const [isSearching, setIsSearching] = useState(false);
-  const [studentFound, setStudentFound] = useState(false);
-  const [selectedStudent, setSelectedStudent] = useState<StudentData | null>(
-    null
-  );
-  // Payment States
-  const [selectedInstallments, setSelectedInstallments] = useState<Set<string>>(
-    new Set()
-  );
-  const [paymentAmounts, setPaymentAmounts] = useState<
-    Record<
-      string,
-      {
-        feeAmount: number;
-        fineAmount: number;
-        discountAmount: number;
-        discountReason: string;
-      }>>(
+  const [currentView, setCurrentView] = useState<'list' | 'detail'>('list')
+  const [filters, setFilters] = useState<SearchFilters>({
+    academicYear: '2024-25',
+    masterFranchise: '',
+    centre: '',
+    class: '',
+    division: '',
+    gender: '',
+    active: 'Active',
+    searchQuery: '',
+    batch: '',
+    term: '',
+  })
+  const [isSearching, setIsSearching] = useState(false)
+  const [searchPerformed, setSearchPerformed] = useState(false)
+  const [studentsList, setStudentsList] = useState<StudentData[]>([])
+  const [selectedStudent, setSelectedStudent] = useState<StudentData | null>(null)
 
-    {});
-  const [paymentMode, setPaymentMode] = useState('cash');
-  const [receiptDate, setReceiptDate] = useState(
-    new Date().toISOString().split('T')[0]
-  );
-  const [referenceNo, setReferenceNo] = useState('');
-  const [chequeNo, setChequeNo] = useState('');
-  const [chequeDate, setChequeDate] = useState('');
-  const [bankName, setBankName] = useState('');
-  const [narration, setNarration] = useState('');
-  const [receivedBy, setReceivedBy] = useState('');
-  // Discount States
-  const [showDiscountEntry, setShowDiscountEntry] = useState(false);
-  const [hasDiscountPermission, setHasDiscountPermission] = useState(true); // Would come from user permissions
-  // Communication States
-  const [sendSMS, setSendSMS] = useState(true);
-  const [sendEmail, setSendEmail] = useState(true);
-  // Modal States
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [showReceiptPreview, setShowReceiptPreview] = useState(false);
-  const [showReceiptSuccess, setShowReceiptSuccess] = useState(false);
-  const [generatedReceipt, setGeneratedReceipt] = useState<any>(null);
-  const [activeTab, setActiveTab] = useState<'payment' | 'history'>('payment');
-  const [expandedInstallment, setExpandedInstallment] = useState<string | null>(
-    null
-  );
-  const [showCancelModal, setShowCancelModal] = useState(false);
-  const [cancellingReceipt, setCancellingReceipt] =
-  useState<ReceiptHistory | null>(null);
-  const [cancelReason, setCancelReason] = useState('');
-  // Auto Receipt Number
+  const [paymentEntries, setPaymentEntries] = useState<Record<string, FeeHeadPaymentEntry>>({})
+  const [paymentMode, setPaymentMode] = useState('cash')
+  const [referenceNo, setReferenceNo] = useState('')
+  const [chequeNo, setChequeNo] = useState('')
+  const [chequeDate, setChequeDate] = useState('')
+  const [bankName, setBankName] = useState('')
+  const [transactionId, setTransactionId] = useState('')
+  const [narration, setNarration] = useState('')
+  const [receivedBy, setReceivedBy] = useState('')
+
+  const [sendSMS, setSendSMS] = useState(true)
+  const [sendEmail, setSendEmail] = useState(true)
+  const [sendWhatsApp, setSendWhatsApp] = useState(true)
+  const [sendInApp, setSendInApp] = useState(true)
+
+  const [finePayingAmount, setFinePayingAmount] = useState(0)
+
+  const [isGenerating, setIsGenerating] = useState(false)
+  const [showReceiptPreview, setShowReceiptPreview] = useState(false)
+  const [showReceiptSuccess, setShowReceiptSuccess] = useState(false)
+  const [generatedReceipt, setGeneratedReceipt] = useState<any>(null)
+  const [activeTab, setActiveTab] = useState<'payment' | 'history'>('payment')
+
+  const [showCancelModal, setShowCancelModal] = useState(false)
+  const [cancellingReceipt, setCancellingReceipt] = useState<ReceiptHistory | null>(null)
+  const [cancelReason, setCancelReason] = useState('')
+
+  const todayDate = getTodayFormatted()
+  const todayDisplay = getTodayDisplay()
+
   const autoReceiptNo = useMemo(() => {
-    const year = new Date().getFullYear();
-    const random = Math.floor(Math.random() * 900000) + 100000;
-    return `RCP${year}/${random}`;
-  }, [showReceiptPreview]);
-  // Computed Values
-  const unpaidInstallments = useMemo(
-    () =>
-    selectedStudent?.installments.filter((i) => i.status !== 'paid') || [],
-    [selectedStudent]
-  );
-  const totalDue = useMemo(
-    () => unpaidInstallments.reduce((sum, i) => sum + i.balanceAmount, 0),
-    [unpaidInstallments]
-  );
-  const totalPaid = useMemo(
-    () =>
-    selectedStudent?.installments.reduce((sum, i) => sum + i.paidAmount, 0) ||
-    0,
-    [selectedStudent]
-  );
-  const totalBalance = useMemo(
-    () =>
-    selectedStudent?.installments.reduce(
-      (sum, i) => sum + i.balanceAmount,
-      0
-    ) || 0,
-    [selectedStudent]
-  );
-  const totalFine = useMemo(
-    () => unpaidInstallments.reduce((sum, i) => sum + i.fineBalance, 0),
-    [unpaidInstallments]
-  );
-  const selectedFeeTotal = useMemo(
-    () =>
-    Array.from(selectedInstallments).reduce(
-      (sum, id) => sum + (paymentAmounts[id]?.feeAmount || 0),
-      0
-    ),
-    [selectedInstallments, paymentAmounts]
-  );
-  const selectedFineTotal = useMemo(
-    () =>
-    Array.from(selectedInstallments).reduce(
-      (sum, id) => sum + (paymentAmounts[id]?.fineAmount || 0),
-      0
-    ),
-    [selectedInstallments, paymentAmounts]
-  );
-  const selectedDiscountTotal = useMemo(
-    () =>
-    Array.from(selectedInstallments).reduce(
-      (sum, id) => sum + (paymentAmounts[id]?.discountAmount || 0),
-      0
-    ),
-    [selectedInstallments, paymentAmounts]
-  );
+    const year = new Date().getFullYear()
+    const random = Math.floor(Math.random() * 900000) + 100000
+    return `RCP${year}/${random}`
+  }, [showReceiptPreview])
+
+  const feeData = selectedStudent?.feeData
+  const unpaidFeeHeads = useMemo(
+    () => feeData?.feeHeads.filter((fh) => getFeeHeadBalance(feeData!, fh) > 0) || [],
+    [feeData]
+  )
+
+  const selectedFeeTotal = useMemo(() => {
+    let total = 0
+    Object.entries(paymentEntries).forEach(([, entry]) => {
+      if (entry.selected) total += entry.payingAmount
+    })
+    return total
+  }, [paymentEntries])
+
   const grandTotal = useMemo(
-    () => selectedFeeTotal + selectedFineTotal - selectedDiscountTotal,
-    [selectedFeeTotal, selectedFineTotal, selectedDiscountTotal]
-  );
-  // Handlers
-  const handleSearch = async () => {
-    if (!searchValue && searchType !== 'class') return;
-    setIsSearching(true);
-    await new Promise((resolve) => setTimeout(resolve, 800));
-    const mockData = getMockStudentData();
-    setSelectedStudent(mockData);
-    setStudentFound(true);
-    setIsSearching(false);
-    resetPaymentForm();
-  };
+    () => selectedFeeTotal + finePayingAmount,
+    [selectedFeeTotal, finePayingAmount]
+  )
+
+  const selectedFeeHeadCount = useMemo(
+    () => Object.values(paymentEntries).filter((e) => e.selected).length,
+    [paymentEntries]
+  )
+
+  // ---- Handlers ----
+
+  const handleSearch = () => {
+    setIsSearching(true)
+    setTimeout(() => {
+      const allStudents = getMockStudentsList()
+      let filtered = allStudents
+      if (filters.searchQuery) {
+        const q = filters.searchQuery.toLowerCase()
+        filtered = filtered.filter(
+          (s) =>
+            `${s.firstName} ${s.middleName} ${s.lastName}`.toLowerCase().includes(q) ||
+            s.admissionNo.toLowerCase().includes(q) ||
+            s.grNo.toLowerCase().includes(q) ||
+            s.parentPhone.includes(q)
+        )
+      }
+      if (filters.class) filtered = filtered.filter((s) => s.class === filters.class)
+      if (filters.division) filtered = filtered.filter((s) => s.section === filters.division)
+      if (filters.gender) filtered = filtered.filter((s) => s.gender === filters.gender)
+      setStudentsList(filtered)
+      setSearchPerformed(true)
+      setIsSearching(false)
+    }, 600)
+  }
+
+  const handleResetSearch = () => {
+    setFilters({
+      academicYear: '2024-25',
+      masterFranchise: '',
+      centre: '',
+      class: '',
+      division: '',
+      gender: '',
+      active: 'Active',
+      searchQuery: '',
+      batch: '',
+      term: '',
+    })
+    setStudentsList([])
+    setSearchPerformed(false)
+    setSelectedStudent(null)
+    setCurrentView('list')
+    setPaymentEntries({})
+  }
+
+  const handleSelectStudent = (student: StudentData) => {
+    setSelectedStudent(student)
+    setCurrentView('detail')
+    setActiveTab('payment')
+    setPaymentEntries({})
+    setFinePayingAmount(0)
+  }
+
+  const handleBackToList = () => {
+    setCurrentView('list')
+    setSelectedStudent(null)
+    setPaymentEntries({})
+    setFinePayingAmount(0)
+  }
+
   const resetPaymentForm = () => {
-    setSelectedInstallments(new Set());
-    setPaymentAmounts({});
-    setPaymentMode('cash');
-    setReceiptDate(new Date().toISOString().split('T')[0]);
-    setReferenceNo('');
-    setChequeNo('');
-    setChequeDate('');
-    setBankName('');
-    setNarration('');
-    setReceivedBy('');
-    setSendSMS(true);
-    setSendEmail(true);
-  };
-  const handleResetAll = () => {
-    setSearchValue('');
-    setSearchClass('');
-    setSearchSection('');
-    setStudentFound(false);
-    setSelectedStudent(null);
-    resetPaymentForm();
-    setActiveTab('payment');
-  };
-  const handleInstallmentSelect = (
-  installment: Installment,
-  checked: boolean) =>
-  {
-    if (installment.status === 'paid') return;
-    const newSelected = new Set(selectedInstallments);
-    if (checked) {
-      newSelected.add(installment.id);
-      setPaymentAmounts((prev) => ({
-        ...prev,
-        [installment.id]: {
-          feeAmount: installment.balanceAmount,
-          fineAmount: installment.fineBalance,
-          discountAmount: 0,
-          discountReason: ''
-        }
-      }));
-    } else {
-      newSelected.delete(installment.id);
-      setPaymentAmounts((prev) => {
-        const updated = {
-          ...prev
-        };
-        delete updated[installment.id];
-        return updated;
-      });
-    }
-    setSelectedInstallments(newSelected);
-  };
-  const handleAmountChange = (
-  installmentId: string,
-  field: 'feeAmount' | 'fineAmount' | 'discountAmount',
-  value: number) =>
-  {
-    const installment = selectedStudent?.installments.find(
-      (i) => i.id === installmentId
-    );
-    if (!installment) return;
-    let validValue = Math.max(0, value);
-    if (field === 'feeAmount') {
-      validValue = Math.min(validValue, installment.balanceAmount);
-    } else if (field === 'fineAmount') {
-      validValue = Math.min(validValue, installment.fineBalance);
-    } else if (field === 'discountAmount') {
-      const maxDiscount =
-      (paymentAmounts[installmentId]?.feeAmount || 0) + (
-      paymentAmounts[installmentId]?.fineAmount || 0);
-      validValue = Math.min(validValue, maxDiscount);
-    }
-    setPaymentAmounts((prev) => ({
+    setPaymentEntries({})
+    setPaymentMode('cash')
+    setReferenceNo('')
+    setChequeNo('')
+    setChequeDate('')
+    setBankName('')
+    setTransactionId('')
+    setNarration('')
+    setReceivedBy('')
+    setSendSMS(true)
+    setSendEmail(true)
+    setSendWhatsApp(true)
+    setSendInApp(true)
+    setFinePayingAmount(0)
+  }
+
+  const handleFeeHeadSelect = (feeHeadId: string, checked: boolean) => {
+    if (!feeData) return
+    const feeHead = feeData.feeHeads.find((fh) => fh.id === feeHeadId)
+    if (!feeHead) return
+    const balance = getFeeHeadBalance(feeData, feeHead)
+    setPaymentEntries((prev) => ({
       ...prev,
-      [installmentId]: {
-        ...prev[installmentId],
-        [field]: validValue
+      [feeHeadId]: {
+        selected: checked,
+        payingAmount: checked ? balance : 0,
+        balanceAmount: balance,
+      },
+    }))
+  }
+
+  const handleFeeHeadAmountChange = (feeHeadId: string, value: number) => {
+    setPaymentEntries((prev) => {
+      const entry = prev[feeHeadId]
+      if (!entry) return prev
+      const validValue = Math.max(0, Math.min(value, entry.balanceAmount))
+      return { ...prev, [feeHeadId]: { ...entry, payingAmount: validValue } }
+    })
+  }
+
+  const handlePayFullFeeHead = (feeHeadId: string) => {
+    setPaymentEntries((prev) => {
+      const entry = prev[feeHeadId]
+      if (!entry) return prev
+      return { ...prev, [feeHeadId]: { ...entry, payingAmount: entry.balanceAmount } }
+    })
+  }
+
+  const handleSelectAllFeeHeads = () => {
+    if (!feeData) return
+    const entries: Record<string, FeeHeadPaymentEntry> = {}
+    feeData.feeHeads.forEach((fh) => {
+      const balance = getFeeHeadBalance(feeData, fh)
+      entries[fh.id] = {
+        selected: balance > 0,
+        payingAmount: balance,
+        balanceAmount: balance,
       }
-    }));
-  };
-  const handleDiscountReasonChange = (
-  installmentId: string,
-  reason: string) =>
-  {
-    setPaymentAmounts((prev) => ({
-      ...prev,
-      [installmentId]: {
-        ...prev[installmentId],
-        discountReason: reason
-      }
-    }));
-  };
-  const handlePayFull = (installmentId: string) => {
-    const installment = selectedStudent?.installments.find(
-      (i) => i.id === installmentId
-    );
-    if (installment) {
-      setPaymentAmounts((prev) => ({
-        ...prev,
-        [installmentId]: {
-          ...prev[installmentId],
-          feeAmount: installment.balanceAmount,
-          fineAmount: installment.fineBalance
-        }
-      }));
-    }
-  };
-  const handleSelectAllUnpaid = () => {
-    const ids = unpaidInstallments.map((i) => i.id);
-    setSelectedInstallments(new Set(ids));
-    const amounts: Record<string, any> = {};
-    unpaidInstallments.forEach((i) => {
-      amounts[i.id] = {
-        feeAmount: i.balanceAmount,
-        fineAmount: i.fineBalance,
-        discountAmount: 0,
-        discountReason: ''
-      };
-    });
-    setPaymentAmounts(amounts);
-  };
-  const handleDeselectAll = () => {
-    setSelectedInstallments(new Set());
-    setPaymentAmounts({});
-  };
+    })
+    setPaymentEntries(entries)
+    setFinePayingAmount(feeData.fineBalance)
+  }
+
+  const handleDeselectAllFeeHeads = () => {
+    setPaymentEntries({})
+    setFinePayingAmount(0)
+  }
+
+  const handleFineAmountChange = (value: number) => {
+    if (!feeData) return
+    setFinePayingAmount(Math.max(0, Math.min(value, feeData.fineBalance)))
+  }
+
   const validatePayment = (): boolean => {
-    if (selectedInstallments.size === 0) {
-      alert('Please select at least one installment');
-      return false;
+    if (selectedFeeHeadCount === 0 && finePayingAmount <= 0) {
+      alert('Please select at least one fee head or enter a fine amount')
+      return false
     }
     if (grandTotal <= 0) {
-      alert('Total amount must be greater than zero');
-      return false;
+      alert('Total amount must be greater than zero')
+      return false
     }
-    if (paymentMode !== 'cash' && !referenceNo) {
-      alert('Reference number is required for non-cash payments');
-      return false;
+    if (paymentMode !== 'cash' && !referenceNo && paymentMode !== 'bank_transfer') {
+      alert('Reference number is required for non-cash payments')
+      return false
+    }
+    if (paymentMode === 'bank_transfer' && (!bankName || !transactionId)) {
+      alert('Bank name and Transaction ID are required for bank transfer')
+      return false
     }
     if (paymentMode === 'cheque' && (!chequeNo || !chequeDate || !bankName)) {
-      alert('Cheque details are required');
-      return false;
+      alert('Cheque details are required')
+      return false
     }
-    // Validate discount has permission
-    if (selectedDiscountTotal > 0 && !hasDiscountPermission) {
-      alert('You do not have permission to apply discounts');
-      return false;
-    }
-    return true;
-  };
+    return true
+  }
+
   const handleGenerateReceipt = async () => {
-    if (!validatePayment()) return;
-    setIsGenerating(true);
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    if (!validatePayment()) return
+    setIsGenerating(true)
+    await new Promise((r) => setTimeout(r, 1000))
+
+    const selectedFeeHeads = feeData!.feeHeads
+      .filter((fh) => paymentEntries[fh.id]?.selected)
+      .map((fh) => ({
+        feeHeadName: fh.name,
+        feeAmount: paymentEntries[fh.id].payingAmount,
+      }))
+
     const receipt = {
       receiptNo: autoReceiptNo,
-      date: receiptDate,
+      date: todayDate,
       student: {
         name: `${selectedStudent?.firstName} ${selectedStudent?.middleName} ${selectedStudent?.lastName}`.trim(),
         admissionNo: selectedStudent?.admissionNo,
         class: `${selectedStudent?.class}-${selectedStudent?.section}`,
+        branch: selectedStudent?.branch,
         parentName: selectedStudent?.parentName,
         phone: selectedStudent?.parentPhone,
-        email: selectedStudent?.parentEmail
+        email: selectedStudent?.parentEmail,
       },
-      installments: Array.from(selectedInstallments).map((id) => {
-        const inst = selectedStudent?.installments.find((i) => i.id === id);
-        const payment = paymentAmounts[id];
-        return {
-          installmentName: inst?.installmentName || '',
-          feeAmount: payment?.feeAmount || 0,
-          fineAmount: payment?.fineAmount || 0,
-          discountAmount: payment?.discountAmount || 0,
-          discountReason: payment?.discountReason || ''
-        };
-      }),
+      feeHeads: selectedFeeHeads,
+      fineAmount: finePayingAmount,
       totalFeeAmount: selectedFeeTotal,
-      totalFineAmount: selectedFineTotal,
-      totalDiscountAmount: selectedDiscountTotal,
+      totalFineAmount: finePayingAmount,
       grandTotal,
       paymentMode,
       referenceNo: paymentMode !== 'cash' ? referenceNo : undefined,
       chequeDetails:
-      paymentMode === 'cheque' ?
-      {
-        chequeNo,
-        chequeDate,
-        bankName
-      } :
-      undefined,
+        paymentMode === 'cheque' ? { chequeNo, chequeDate, bankName } : undefined,
+      bankTransferDetails:
+        paymentMode === 'bank_transfer' ? { bankName, transactionId } : undefined,
       narration,
       receivedBy: receivedBy || 'Admin',
       sendSMS,
       sendEmail,
-      ledgerPosted: true
-    };
-    setGeneratedReceipt(receipt);
-    setShowReceiptPreview(true);
-    setIsGenerating(false);
-  };
+      sendWhatsApp,
+      sendInApp,
+      ledgerPosted: true,
+    }
+    setGeneratedReceipt(receipt)
+    setShowReceiptPreview(true)
+    setIsGenerating(false)
+  }
+
   const handleConfirmReceipt = async () => {
-    setShowReceiptPreview(false);
-    // Simulate auto ledger posting and communication
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    setShowReceiptSuccess(true);
-  };
+    setShowReceiptPreview(false)
+    await new Promise((r) => setTimeout(r, 500))
+    setShowReceiptSuccess(true)
+  }
+
   const handleCancelReceipt = (receipt: ReceiptHistory) => {
-    setCancellingReceipt(receipt);
-    setCancelReason('');
-    setShowCancelModal(true);
-  };
+    setCancellingReceipt(receipt)
+    setCancelReason('')
+    setShowCancelModal(true)
+  }
+
   const confirmCancelReceipt = async () => {
     if (!cancelReason.trim()) {
-      alert('Please provide a reason for cancellation');
-      return;
+      alert('Please provide a reason')
+      return
     }
-    // Simulate cancellation
-    await new Promise((resolve) => setTimeout(resolve, 500));
-    setShowCancelModal(false);
-    setCancellingReceipt(null);
-    alert('Receipt cancelled successfully. Ledger entries have been reversed.');
-  };
-  const getStatusConfig = (status: string) => {
-    switch (status) {
-      case 'paid':
-        return {
-          variant: 'success' as const,
-          label: 'Paid'
-        };
-      case 'partial':
-        return {
-          variant: 'warning' as const,
-          label: 'Partial'
-        };
-      case 'overdue':
-        return {
-          variant: 'danger' as const,
-          label: 'Overdue'
-        };
-      default:
-        return {
-          variant: 'gray' as const,
-          label: 'Unpaid'
-        };
-    }
-  };
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR',
-      minimumFractionDigits: 0
-    }).format(amount);
-  };
+    await new Promise((r) => setTimeout(r, 500))
+    setShowCancelModal(false)
+    setCancellingReceipt(null)
+    alert('Receipt cancelled successfully.')
+  }
+
+  const getStudentTotalDue = (student: StudentData) => student.feeData.balanceAmount
+  const getStudentTotalPaid = (student: StudentData) => student.feeData.paidAmount
+
   // ============================================
-  // RENDER
+  // RENDER: STUDENT LIST VIEW
   // ============================================
-  return (
-    <div className="min-h-screen bg-gray-100 p-4 space-y-4">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-xl font-bold text-gray-900 flex items-center gap-2">
-            <Receipt className="w-6 h-6 text-blue-600" />
-            Fee Receipt
-          </h1>
-          <p className="text-xs text-gray-500">
-            Generate fee payment receipts with auto ledger posting
-          </p>
-        </div>
-        <Button variant="outline" size="sm" onClick={handleResetAll}>
-          <RotateCcw className="w-3.5 h-3.5 mr-1" />
-          Reset
-        </Button>
-      </div>
-
-      <ReportFilters />
-
-      {/* Student Search Section */}
-      <Card
-        title="Student Search"
-        subtitle="Search by Admission No, Name, Class, or Mobile">
-
-        <div className="p-4">
-          <div className="grid grid-cols-1 md:grid-cols-6 gap-3">
-            <Select
-              label="Search By"
-              options={searchTypeOptions}
-              value={searchType}
-              onChange={(e) => setSearchType(e.target.value as any)} />
-
-
-            {searchType === 'class' ?
-            <>
-                <Select
-                label="Class"
-                options={classOptions}
-                value={searchClass}
-                onChange={(e) => setSearchClass(e.target.value)} />
-
-                <Select
-                label="Section"
-                options={sectionOptions}
-                value={searchSection}
-                onChange={(e) => setSearchSection(e.target.value)} />
-
-              </> :
-
-            <div className="md:col-span-2">
-                <Input
-                label={
-                searchType === 'admissionNo' ?
-                'Admission Number' :
-                searchType === 'name' ?
-                'Student Name' :
-                'Mobile Number'
-                }
-                placeholder={
-                searchType === 'admissionNo' ?
-                'e.g., ADM2024001' :
-                searchType === 'name' ?
-                'Enter student name' :
-                'Enter mobile number'
-                }
-                value={searchValue}
-                onChange={(e) => setSearchValue(e.target.value)}
-                leftIcon={
-                searchType === 'mobile' ?
-                <Phone className="w-3.5 h-3.5" /> :
-
-                <Search className="w-3.5 h-3.5" />
-
-                } />
-
-              </div>
-            }
-
-            <Select
-              label="Academic Year"
-              options={academicYearOptions}
-              value={academicYear}
-              onChange={(e) => setAcademicYear(e.target.value)} />
-
-
-            <div className="flex items-end gap-2">
-              <Button
-                variant="primary"
-                onClick={handleSearch}
-                loading={isSearching}
-                className="flex-1">
-
-                <Search className="w-3.5 h-3.5 mr-1" />
-                Search
-              </Button>
-            </div>
+  if (currentView === 'list') {
+    return (
+      <div className="space-y-6 p-6 bg-gray-50 min-h-screen">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+              <Receipt className="w-6 h-6 text-blue-600" />
+              Fee Collection
+            </h1>
+            <p className="text-sm text-gray-500 mt-1">Search and select a student to collect fees</p>
           </div>
         </div>
-      </Card>
 
-      {/* Student Found */}
-      {studentFound && selectedStudent &&
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
-          {/* Left Panel - Student Info & Summary */}
-          <div className="space-y-4">
-            {/* Student Info */}
-            <Card>
-              <div className="bg-gradient-to-r from-blue-600 to-blue-700 p-3">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center text-white text-lg font-bold">
-                    {selectedStudent.firstName[0]}
-                    {selectedStudent.lastName[0]}
-                  </div>
-                  <div className="text-white">
-                    <h3 className="font-semibold text-sm">
-                      {selectedStudent.firstName} {selectedStudent.middleName}{' '}
-                      {selectedStudent.lastName}
-                    </h3>
-                    <p className="text-blue-100 text-xs">
-                      Class {selectedStudent.class}-{selectedStudent.section} |
-                      Roll: {selectedStudent.rollNo}
-                    </p>
-                  </div>
-                </div>
-              </div>
-              <div className="p-3 space-y-2 text-xs">
-                <div className="flex justify-between">
-                  <span className="text-gray-500">Admission No:</span>
-                  <span className="font-medium">
-                    {selectedStudent.admissionNo}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-500">Parent:</span>
-                  <span className="font-medium">
-                    {selectedStudent.parentName}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-500">Phone:</span>
-                  <span className="font-medium">
-                    {selectedStudent.parentPhone}
-                  </span>
-                </div>
-                <div className="flex flex-wrap gap-1 pt-2 border-t">
-                  {selectedStudent.hasTransport &&
-                <Badge variant="info" size="xs">
-                      Transport
-                    </Badge>
-                }
-                  {selectedStudent.hasConcession &&
-                <Badge variant="success" size="xs">
-                      {selectedStudent.concessionPercentage}% Concession
-                    </Badge>
-                }
-                  {selectedStudent.hasScholarship &&
-                <Badge variant="warning" size="xs">
-                      Scholarship
-                    </Badge>
-                }
-                </div>
-              </div>
-            </Card>
+        <Card className="p-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-4">
+            <Select
+              label="Academic Year"
+              options={[
+                { value: '2024-25', label: '2024-2025' },
+                { value: '2023-24', label: '2023-2024' },
+              ]}
+              value={filters.academicYear}
+              onChange={(e) => setFilters({ ...filters, academicYear: e.target.value })}
+            />
+            <Select
+              label="Master Franchise"
+              options={[
+                { value: '', label: 'All' },
+                { value: 'main', label: 'Main Campus' },
+              ]}
+              value={filters.masterFranchise}
+              onChange={(e) => setFilters({ ...filters, masterFranchise: e.target.value })}
+            />
+            <Select
+              label="Centre"
+              options={[
+                { value: '', label: 'All' },
+                { value: 'main', label: 'Main Centre' },
+              ]}
+              value={filters.centre}
+              onChange={(e) => setFilters({ ...filters, centre: e.target.value })}
+            />
+            <Select
+              label="Class"
+              options={[
+                { value: '', label: 'All' },
+                { value: '9', label: 'Class 9' },
+                { value: '10', label: 'Class 10' },
+              ]}
+              value={filters.class}
+              onChange={(e) => setFilters({ ...filters, class: e.target.value })}
+            />
+            <Select
+              label="Division"
+              options={[
+                { value: '', label: 'All' },
+                { value: 'A', label: 'A' },
+                { value: 'B', label: 'B' },
+              ]}
+              value={filters.division}
+              onChange={(e) => setFilters({ ...filters, division: e.target.value })}
+            />
+            <Select
+              label="Gender"
+              options={[
+                { value: '', label: 'All' },
+                { value: 'Male', label: 'Male' },
+                { value: 'Female', label: 'Female' },
+              ]}
+              value={filters.gender}
+              onChange={(e) => setFilters({ ...filters, gender: e.target.value })}
+            />
+            <Select
+              label="Active Status"
+              options={[
+                { value: 'Active', label: 'Active' },
+                { value: 'Inactive', label: 'Inactive' },
+                { value: 'All', label: 'All' },
+              ]}
+              value={filters.active}
+              onChange={(e) => setFilters({ ...filters, active: e.target.value })}
+            />
+            <Select
+              label="Batch"
+              options={[
+                { value: '', label: 'All' },
+                { value: 'Morning', label: 'Morning' },
+                { value: 'Afternoon', label: 'Afternoon' },
+              ]}
+              value={filters.batch}
+              onChange={(e) => setFilters({ ...filters, batch: e.target.value })}
+            />
+            <Select
+              label="Term"
+              options={[
+                { value: '', label: 'All' },
+                { value: 'Term 1', label: 'Term 1' },
+                { value: 'Term 2', label: 'Term 2' },
+                { value: 'Term 3', label: 'Term 3' },
+              ]}
+              value={filters.term}
+              onChange={(e) => setFilters({ ...filters, term: e.target.value })}
+            />
+            <Input
+              label="Search Student"
+              placeholder="Name, Adm No, Phone..."
+              value={filters.searchQuery}
+              onChange={(e) => setFilters({ ...filters, searchQuery: e.target.value })}
+              leftIcon={<Search className="w-4 h-4" />}
+            />
+          </div>
+          <div className="mt-4 flex justify-end gap-2">
+            <Button variant="outline" onClick={handleResetSearch}>
+              <RotateCcw className="w-4 h-4 mr-2" /> Reset
+            </Button>
+            <Button variant="primary" onClick={handleSearch} loading={isSearching}>
+              <Search className="w-4 h-4 mr-2" /> Search
+            </Button>
+          </div>
+        </Card>
 
-            {/* Fee Summary Table */}
-            <Card title="Fee Summary">
-              <div className="p-0">
+        {searchPerformed && (
+          <Card
+            title={`Students Found (${studentsList.length})`}
+            subtitle="Click on a student to view fee details and collect payment"
+          >
+            {studentsList.length === 0 ? (
+              <div className="p-8 text-center text-gray-500">
+                <Users className="w-12 h-12 mx-auto mb-3 text-gray-300" />
+                <p className="text-sm font-medium">No students found</p>
+                <p className="text-xs mt-1">Try adjusting your search filters</p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
                 <table className="w-full text-xs">
-                  <tbody className="divide-y divide-gray-100">
-                    <tr className="hover:bg-gray-50">
-                      <td className="px-3 py-2 text-gray-600">Total Due</td>
-                      <td className="px-3 py-2 text-right font-semibold text-red-600">
-                        {formatCurrency(totalDue + totalFine)}
-                      </td>
+                  <thead className="bg-gray-50 border-b">
+                    <tr>
+                      <th className="px-3 py-2.5 text-left font-semibold text-gray-600">Student</th>
+                      <th className="px-3 py-2.5 text-left font-semibold text-gray-600">
+                        Adm No / GR No
+                      </th>
+                      <th className="px-3 py-2.5 text-left font-semibold text-gray-600">Class</th>
+                      <th className="px-3 py-2.5 text-left font-semibold text-gray-600">Branch</th>
+                      <th className="px-3 py-2.5 text-left font-semibold text-gray-600">
+                        Parent / Phone
+                      </th>
+                      <th className="px-3 py-2.5 text-left font-semibold text-gray-600">Category</th>
+                      <th className="px-3 py-2.5 text-right font-semibold text-gray-600">
+                        Total Paid
+                      </th>
+                      <th className="px-3 py-2.5 text-right font-semibold text-gray-600">
+                        Balance Due
+                      </th>
+                      <th className="px-3 py-2.5 text-center font-semibold text-gray-600">Status</th>
+                      <th className="px-3 py-2.5 text-center font-semibold text-gray-600">Action</th>
                     </tr>
-                    <tr className="hover:bg-gray-50">
-                      <td className="px-3 py-2 text-gray-600">Total Paid</td>
-                      <td className="px-3 py-2 text-right font-semibold text-green-600">
-                        {formatCurrency(totalPaid)}
-                      </td>
-                    </tr>
-                    <tr className="hover:bg-gray-50">
-                      <td className="px-3 py-2 text-gray-600">Balance</td>
-                      <td className="px-3 py-2 text-right font-semibold">
-                        {formatCurrency(totalBalance)}
-                      </td>
-                    </tr>
-                    {totalFine > 0 &&
-                  <tr className="bg-amber-50">
-                        <td className="px-3 py-2 text-amber-700">Late Fine</td>
-                        <td className="px-3 py-2 text-right font-semibold text-amber-700">
-                          {formatCurrency(totalFine)}
-                        </td>
-                      </tr>
-                  }
+                  </thead>
+                  <tbody className="divide-y">
+                    {studentsList.map((student) => {
+                      const due = getStudentTotalDue(student)
+                      const paid = getStudentTotalPaid(student)
+                      return (
+                        <tr
+                          key={student.id}
+                          className="hover:bg-blue-50/50 cursor-pointer transition-colors"
+                          onClick={() => handleSelectStudent(student)}
+                        >
+                          <td className="px-3 py-3">
+                            <div className="flex items-center gap-2.5">
+                              <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-700 text-xs font-bold">
+                                {student.firstName[0]}
+                                {student.lastName[0]}
+                              </div>
+                              <div>
+                                <div className="font-semibold text-gray-900">
+                                  {student.firstName} {student.middleName} {student.lastName}
+                                </div>
+                                <div className="text-[10px] text-gray-500">
+                                  Roll: {student.rollNo} | {student.gender}
+                                </div>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-3 py-3">
+                            <div className="font-medium">{student.admissionNo}</div>
+                            <div className="text-[10px] text-gray-500">{student.grNo}</div>
+                          </td>
+                          <td className="px-3 py-3">
+                            <div className="font-medium">
+                              Class {student.class}-{student.section}
+                            </div>
+                            <div className="text-[10px] text-gray-500">{student.department}</div>
+                          </td>
+                          <td className="px-3 py-3">
+                            <div className="font-medium">{student.branch}</div>
+                          </td>
+                          <td className="px-3 py-3">
+                            <div className="font-medium">{student.parentName}</div>
+                            <div className="text-[10px] text-gray-500">{student.parentPhone}</div>
+                          </td>
+                          <td className="px-3 py-3">
+                            <div className="flex flex-wrap gap-1">
+                              <Badge variant="gray" size="xs">
+                                {student.feeCategory}
+                              </Badge>
+                              {student.hasConcession && (
+                                <Badge variant="success" size="xs">
+                                  {student.concessionPercentage}% Off
+                                </Badge>
+                              )}
+                              {student.hasScholarship && (
+                                <Badge variant="warning" size="xs">
+                                  Scholar
+                                </Badge>
+                              )}
+                            </div>
+                          </td>
+                          <td className="px-3 py-3 text-right font-medium text-green-600">
+                            {formatCurrency(paid)}
+                          </td>
+                          <td className="px-3 py-3 text-right font-bold text-red-600">
+                            {due > 0 ? (
+                              formatCurrency(due)
+                            ) : (
+                              <span className="text-green-600">Nil</span>
+                            )}
+                          </td>
+                          <td className="px-3 py-3 text-center">
+                            <Badge
+                              variant={
+                                due === 0 ? 'success' : due > 50000 ? 'danger' : 'warning'
+                              }
+                              size="xs"
+                            >
+                              {due === 0 ? 'Clear' : 'Due'}
+                            </Badge>
+                          </td>
+                          <td className="px-3 py-3 text-center">
+                            <Button
+                              variant="primary"
+                              size="xs"
+                              onClick={() => handleSelectStudent(student)}
+                            >
+                              <CreditCard className="w-3 h-3 mr-1" /> Collect
+                            </Button>
+                          </td>
+                        </tr>
+                      )
+                    })}
                   </tbody>
                 </table>
               </div>
-            </Card>
+            )}
+          </Card>
+        )}
+      </div>
+    )
+  }
 
-            {/* Selected Payment Summary */}
-            {selectedInstallments.size > 0 &&
-          <Card className="bg-blue-50 border-blue-200">
-                <div className="p-3">
-                  <h4 className="text-xs font-semibold text-blue-800 mb-2">
-                    Payment Summary
-                  </h4>
-                  <table className="w-full text-xs">
-                    <tbody className="space-y-1">
-                      <tr>
-                        <td className="text-blue-700">Fee Amount</td>
-                        <td className="text-right font-medium">
-                          {formatCurrency(selectedFeeTotal)}
-                        </td>
-                      </tr>
-                      {selectedFineTotal > 0 &&
-                  <tr>
-                          <td className="text-blue-700">Fine Amount</td>
-                          <td className="text-right font-medium">
-                            {formatCurrency(selectedFineTotal)}
-                          </td>
-                        </tr>
-                  }
-                      {selectedDiscountTotal > 0 &&
-                  <tr>
-                          <td className="text-green-700">Discount</td>
-                          <td className="text-right font-medium text-green-700">
-                            -{formatCurrency(selectedDiscountTotal)}
-                          </td>
-                        </tr>
-                  }
-                      <tr className="border-t border-blue-200">
-                        <td className="text-blue-900 font-semibold pt-1">
-                          Grand Total
-                        </td>
-                        <td className="text-right font-bold text-blue-900 text-sm pt-1">
-                          {formatCurrency(grandTotal)}
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
+  // ============================================
+  // RENDER: STUDENT DETAIL VIEW
+  // ============================================
+  if (!selectedStudent || !feeData) return null
+
+  const statusConfig = getStatusConfig(feeData.status)
+
+  return (
+    <div className="space-y-4 p-6 bg-gray-50 min-h-screen">
+      <div className="flex items-center gap-4">
+        <Button variant="ghost" size="sm" onClick={handleBackToList}>
+          <ArrowLeft className="w-4 h-4 mr-1" /> Back to List
+        </Button>
+        <div className="flex-1">
+          <h1 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+            <Receipt className="w-5 h-5 text-blue-600" />
+            Fee Collection
+          </h1>
+          <p className="text-xs text-gray-500">
+            Collecting fees for {selectedStudent.firstName} {selectedStudent.lastName}
+          </p>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+        {/* Left Panel */}
+        <div className="space-y-4">
+          {/* Student Header Card */}
+          <Card>
+            <div className="bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 p-3">
+              <div className="flex items-center gap-2.5 mb-2">
+                <div className="w-12 h-12 rounded-full bg-white/20 flex items-center justify-center text-white text-base font-bold border-2 border-white/30 flex-shrink-0">
+                  {selectedStudent.firstName[0]}
+                  {selectedStudent.lastName[0]}
                 </div>
-              </Card>
-          }
-          </div>
-
-          {/* Right Panel - Installments & Payment */}
-          <div className="lg:col-span-3 space-y-4">
-            {/* Tabs */}
-            <div className="flex gap-1 bg-gray-200 p-1 rounded-lg">
-              <button
-              onClick={() => setActiveTab('payment')}
-              className={`flex-1 px-3 py-1.5 text-xs font-medium rounded-md transition-all ${activeTab === 'payment' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-600 hover:text-gray-900'}`}>
-
-                <CreditCard className="w-3.5 h-3.5 inline mr-1" />
-                Make Payment ({unpaidInstallments.length})
-              </button>
-              <button
-              onClick={() => setActiveTab('history')}
-              className={`flex-1 px-3 py-1.5 text-xs font-medium rounded-md transition-all ${activeTab === 'history' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-600 hover:text-gray-900'}`}>
-
-                <History className="w-3.5 h-3.5 inline mr-1" />
-                Receipt History ({selectedStudent.receiptHistory.length})
-              </button>
+                <div className="text-white flex-1 min-w-0">
+                  <h3 className="font-bold text-xs truncate">
+                    {selectedStudent.firstName} {selectedStudent.middleName}{' '}
+                    {selectedStudent.lastName}
+                  </h3>
+                  <p className="text-blue-200 text-[10px]">
+                    Class {selectedStudent.class}-{selectedStudent.section} |{' '}
+                    {selectedStudent.department}
+                  </p>
+                  <p className="text-blue-200 text-[10px]">
+                    Roll: {selectedStudent.rollNo} | {selectedStudent.gender}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-1 flex-wrap">
+                <Badge variant="info" size="xs">
+                  {selectedStudent.status}
+                </Badge>
+                {selectedStudent.hasHostel && (
+                  <Badge variant="info" size="xs">
+                    <Home className="w-2.5 h-2.5" /> Hostel
+                  </Badge>
+                )}
+                {selectedStudent.hasConcession && (
+                  <Badge variant="success" size="xs">
+                    <Percent className="w-2.5 h-2.5" /> {selectedStudent.concessionPercentage}%
+                  </Badge>
+                )}
+                {selectedStudent.hasScholarship && (
+                  <Badge variant="warning" size="xs">
+                    <Award className="w-2.5 h-2.5" /> Scholar
+                  </Badge>
+                )}
+              </div>
             </div>
 
-            {activeTab === 'payment' &&
-          <>
-                {/* Payment Details */}
-                <Card title="Payment Details">
-                  <div className="p-3">
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                      <Input
-                    label="Receipt Date"
-                    type="date"
-                    value={receiptDate}
-                    onChange={(e) => setReceiptDate(e.target.value)}
-                    required />
+            {/* Personal Section */}
+            <div className="px-3 pt-2 pb-1">
+              <div className="text-[9px] font-semibold text-gray-500 uppercase tracking-wider mb-1 border-b pb-0.5">
+                Personal
+              </div>
+              <div className="grid grid-cols-2 gap-x-2 gap-y-0.5">
+                <CompactRow
+                  icon={<IdCard className="w-3 h-3" />}
+                  label="Adm No"
+                  value={selectedStudent.admissionNo}
+                />
+                <CompactRow
+                  icon={<Hash className="w-3 h-3" />}
+                  label="GR No"
+                  value={selectedStudent.grNo}
+                />
+                <CompactRow
+                  icon={<Hash className="w-3 h-3" />}
+                  label="SU ID"
+                  value={selectedStudent.suId}
+                />
+                <CompactRow
+                  icon={<Calendar className="w-3 h-3" />}
+                  label="DOB"
+                  value={new Date(selectedStudent.dateOfBirth).toLocaleDateString('en-IN')}
+                />
+                <CompactRow
+                  icon={<Heart className="w-3 h-3" />}
+                  label="Blood"
+                  value={selectedStudent.bloodGroup}
+                />
+                <CompactRow
+                  icon={<Globe className="w-3 h-3" />}
+                  label="Nationality"
+                  value={selectedStudent.nationality}
+                />
+                <CompactRow
+                  icon={<User className="w-3 h-3" />}
+                  label="Religion"
+                  value={selectedStudent.religion}
+                />
+                <CompactRow
+                  icon={<Shield className="w-3 h-3" />}
+                  label="Category"
+                  value={selectedStudent.category}
+                />
+              </div>
+              <div className="mt-0.5">
+                <CompactRow
+                  icon={<IdCard className="w-3 h-3" />}
+                  label="Aadhar"
+                  value={selectedStudent.aadharNo}
+                />
+                <CompactRow
+                  icon={<MapPin className="w-3 h-3" />}
+                  label="Address"
+                  value={`${selectedStudent.address}, ${selectedStudent.city} - ${selectedStudent.pincode}`}
+                />
+              </div>
+            </div>
 
-                      <Select
-                    label="Payment Mode"
-                    options={paymentModeOptions}
-                    value={paymentMode}
-                    onChange={(e) => setPaymentMode(e.target.value)}
-                    required />
+            {/* Parent Section */}
+            <div className="px-3 pt-2 pb-1">
+              <div className="text-[9px] font-semibold text-gray-500 uppercase tracking-wider mb-1 border-b pb-0.5">
+                Parents
+              </div>
+              <CompactRow
+                icon={<User className="w-3 h-3" />}
+                label="Father"
+                value={selectedStudent.parentName}
+              />
+              <div className="grid grid-cols-2 gap-x-2">
+                <CompactRow
+                  icon={<Phone className="w-3 h-3" />}
+                  label="Phone"
+                  value={selectedStudent.parentPhone}
+                />
+                <CompactRow
+                  icon={<Mail className="w-3 h-3" />}
+                  label="Email"
+                  value={selectedStudent.parentEmail}
+                />
+              </div>
+              <CompactRow
+                icon={<User className="w-3 h-3" />}
+                label="Mother"
+                value={selectedStudent.motherName}
+              />
+              <CompactRow
+                icon={<Phone className="w-3 h-3" />}
+                label="Mother's Phone"
+                value={selectedStudent.motherPhone}
+              />
+            </div>
 
-                      {paymentMode !== 'cash' &&
-                  <Input
-                    label="Reference No"
-                    placeholder="Transaction/UTR No"
-                    value={referenceNo}
-                    onChange={(e) => setReferenceNo(e.target.value)}
-                    required />
+            {/* Academic Section */}
+            <div className="px-3 pt-2 pb-1">
+              <div className="text-[9px] font-semibold text-gray-500 uppercase tracking-wider mb-1 border-b pb-0.5">
+                Academic
+              </div>
+              <div className="grid grid-cols-2 gap-x-2 gap-y-0.5">
+                <CompactRow
+                  icon={<GraduationCap className="w-3 h-3" />}
+                  label="Class"
+                  value={`${selectedStudent.class}-${selectedStudent.section}`}
+                />
+                <CompactRow
+                  icon={<Building className="w-3 h-3" />}
+                  label="Branch"
+                  value={selectedStudent.branch}
+                />
+                <CompactRow
+                  icon={<BookOpen className="w-3 h-3" />}
+                  label="Stream"
+                  value={selectedStudent.stream}
+                />
+                <CompactRow
+                  icon={<BookOpen className="w-3 h-3" />}
+                  label="Medium"
+                  value={selectedStudent.medium}
+                />
+                <CompactRow
+                  icon={<Calendar className="w-3 h-3" />}
+                  label="Year"
+                  value={selectedStudent.academicYear}
+                />
+                <CompactRow
+                  icon={<Calendar className="w-3 h-3" />}
+                  label="Adm Date"
+                  value={new Date(selectedStudent.admissionDate).toLocaleDateString('en-IN')}
+                />
+              </div>
+            </div>
 
-                  }
-                      <Input
-                    label="Received By"
-                    placeholder="Staff name"
-                    value={receivedBy}
-                    onChange={(e) => setReceivedBy(e.target.value)} />
+            {/* Benefits */}
+            {(selectedStudent.hasConcession ||
+              selectedStudent.hasScholarship ||
+              selectedStudent.hasHostel) && (
+              <div className="px-3 pt-2 pb-2">
+                <div className="text-[9px] font-semibold text-gray-500 uppercase tracking-wider mb-1 border-b pb-0.5">
+                  Benefits
+                </div>
+                {selectedStudent.hasHostel && (
+                  <CompactRow
+                    icon={<Home className="w-3 h-3" />}
+                    label="Hostel Room"
+                    value={selectedStudent.hostelRoom || '-'}
+                  />
+                )}
+                {selectedStudent.hasConcession && (
+                  <div className="grid grid-cols-2 gap-x-2">
+                    <CompactRow
+                      icon={<Percent className="w-3 h-3" />}
+                      label="Concession"
+                      value={selectedStudent.concessionType || '-'}
+                    />
+                    <CompactRow
+                      icon={<BadgePercent className="w-3 h-3" />}
+                      label="Percent"
+                      value={`${selectedStudent.concessionPercentage}%`}
+                    />
+                  </div>
+                )}
+                {selectedStudent.hasScholarship && (
+                  <div className="grid grid-cols-2 gap-x-2">
+                    <CompactRow
+                      icon={<Award className="w-3 h-3" />}
+                      label="Scholarship"
+                      value={selectedStudent.scholarshipName || '-'}
+                    />
+                    <CompactRow
+                      icon={<Banknote className="w-3 h-3" />}
+                      label="Amount"
+                      value={formatCurrency(selectedStudent.scholarshipAmount || 0)}
+                    />
+                  </div>
+                )}
+              </div>
+            )}
+          </Card>
 
-                    </div>
+          {/* Fee Summary */}
+          <Card title="Fee Summary">
+            <table className="w-full text-xs">
+              <tbody className="divide-y divide-gray-100">
+                <tr className="hover:bg-gray-50">
+                  <td className="px-3 py-2 text-gray-600">Total Fee</td>
+                  <td className="px-3 py-2 text-right font-semibold">
+                    {formatCurrency(feeData.netAmount)}
+                  </td>
+                </tr>
+                <tr className="hover:bg-gray-50">
+                  <td className="px-3 py-2 text-gray-600">Total Paid</td>
+                  <td className="px-3 py-2 text-right font-semibold text-green-600">
+                    {formatCurrency(feeData.paidAmount)}
+                  </td>
+                </tr>
+                <tr className="hover:bg-gray-50">
+                  <td className="px-3 py-2 text-gray-600">Balance</td>
+                  <td className="px-3 py-2 text-right font-semibold text-red-600">
+                    {formatCurrency(feeData.balanceAmount)}
+                  </td>
+                </tr>
+                {feeData.fineBalance > 0 && (
+                  <tr className="bg-amber-50">
+                    <td className="px-3 py-2 text-amber-700">Late Fine</td>
+                    <td className="px-3 py-2 text-right font-semibold text-amber-700">
+                      {formatCurrency(feeData.fineBalance)}
+                    </td>
+                  </tr>
+                )}
+                <tr className="bg-red-50">
+                  <td className="px-3 py-2 text-red-700 font-medium">Total Due</td>
+                  <td className="px-3 py-2 text-right font-bold text-red-700">
+                    {formatCurrency(feeData.totalDue)}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </Card>
 
-                    {paymentMode === 'cheque' &&
-                <div className="grid grid-cols-3 gap-3 mt-3 p-3 bg-gray-50 rounded-md">
-                        <Input
-                    label="Cheque No"
-                    placeholder="Cheque number"
-                    value={chequeNo}
-                    onChange={(e) => setChequeNo(e.target.value)}
-                    required />
-
-                        <Input
-                    label="Cheque Date"
-                    type="date"
-                    value={chequeDate}
-                    onChange={(e) => setChequeDate(e.target.value)}
-                    required />
-
-                        <Input
-                    label="Bank Name"
-                    placeholder="Bank name"
-                    value={bankName}
-                    onChange={(e) => setBankName(e.target.value)}
-                    required />
-
+          {/* Payment Summary */}
+          {(selectedFeeHeadCount > 0 || finePayingAmount > 0) && (
+            <Card className="bg-blue-50 border-blue-200">
+              <div className="p-3">
+                <h4 className="text-xs font-semibold text-blue-800 mb-2">Payment Summary</h4>
+                <table className="w-full text-xs">
+                  <tbody>
+                    <tr>
+                      <td className="text-blue-700 py-0.5">Fee Heads ({selectedFeeHeadCount})</td>
+                      <td className="text-right font-medium">{formatCurrency(selectedFeeTotal)}</td>
+                    </tr>
+                    {finePayingAmount > 0 && (
+                      <tr>
+                        <td className="text-blue-700 py-0.5">Fine</td>
+                        <td className="text-right font-medium">
+                          {formatCurrency(finePayingAmount)}
+                        </td>
+                      </tr>
+                    )}
+                    <tr className="border-t border-blue-200">
+                      <td className="text-blue-900 font-semibold pt-1">Grand Total</td>
+                      <td className="text-right font-bold text-blue-900 text-sm pt-1">
+                        {formatCurrency(grandTotal)}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+                <div className="mt-2 pt-2 border-t border-blue-200 space-y-0.5">
+                  {feeData.feeHeads
+                    .filter((fh) => paymentEntries[fh.id]?.selected)
+                    .map((fh) => (
+                      <div key={fh.id} className="flex justify-between text-[10px]">
+                        <span className="text-blue-800 truncate max-w-[140px]">{fh.name}</span>
+                        <span className="font-medium">
+                          {formatCurrency(paymentEntries[fh.id].payingAmount)}
+                        </span>
                       </div>
-                }
+                    ))}
+                </div>
+              </div>
+            </Card>
+          )}
+        </div>
 
-                    <div className="mt-3">
+        {/* Right Panel */}
+        <div className="lg:col-span-3 space-y-4">
+          <div className="flex gap-1 bg-gray-200 p-1 rounded-lg">
+            {(
+              [
+                {
+                  key: 'payment',
+                  label: 'Make Payment',
+                  icon: CreditCard,
+                  count: unpaidFeeHeads.length,
+                },
+                {
+                  key: 'history',
+                  label: 'Receipt History',
+                  icon: History,
+                  count: selectedStudent.receiptHistory.length,
+                },
+              ] as const
+            ).map((tab) => (
+              <button
+                key={tab.key}
+                onClick={() => setActiveTab(tab.key)}
+                className={`flex-1 px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
+                  activeTab === tab.key
+                    ? 'bg-white text-blue-600 shadow-sm'
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                <tab.icon className="w-3.5 h-3.5 inline mr-1" />
+                {tab.label} ({tab.count})
+              </button>
+            ))}
+          </div>
+
+          {/* ==================== PAYMENT TAB ==================== */}
+          {activeTab === 'payment' && (
+            <>
+              {/* Payment Details */}
+              <Card title="Payment Details">
+                <div className="p-3">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <Select
+                      label="Payment Mode *"
+                      options={paymentModeOptions}
+                      value={paymentMode}
+                      onChange={(e) => setPaymentMode(e.target.value)}
+                    />
+                    <div>
                       <label className="block text-xs font-medium text-gray-700 mb-1">
-                        Narration / Remarks
+                        Receipt Date
                       </label>
-                      <textarea
-                    value={narration}
-                    onChange={(e) => setNarration(e.target.value)}
-                    placeholder="Enter any remarks or narration..."
-                    className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
-                    rows={2} />
-
-                    </div>
-
-                    <div className="flex items-center gap-4 mt-3 pt-3 border-t">
-                      <label className="flex items-center gap-2 text-xs cursor-pointer">
-                        <input
-                      type="checkbox"
-                      checked={sendSMS}
-                      onChange={(e) => setSendSMS(e.target.checked)}
-                      className="w-3.5 h-3.5 rounded" />
-
-                        <MessageSquare className="w-3.5 h-3.5 text-gray-500" />
-                        Send SMS
-                      </label>
-                      <label className="flex items-center gap-2 text-xs cursor-pointer">
-                        <input
-                      type="checkbox"
-                      checked={sendEmail}
-                      onChange={(e) => setSendEmail(e.target.checked)}
-                      className="w-3.5 h-3.5 rounded" />
-
-                        <Mail className="w-3.5 h-3.5 text-gray-500" />
-                        Send Email
-                      </label>
-                      {hasDiscountPermission &&
-                  <label className="flex items-center gap-2 text-xs cursor-pointer ml-auto">
-                          <input
-                      type="checkbox"
-                      checked={showDiscountEntry}
-                      onChange={(e) =>
-                      setShowDiscountEntry(e.target.checked)
-                      }
-                      className="w-3.5 h-3.5 rounded" />
-
-                          <BadgePercent className="w-3.5 h-3.5 text-gray-500" />
-                          Apply Discount
-                        </label>
-                  }
+                      <div className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm bg-gray-50 text-gray-700 flex items-center gap-2">
+                        <Calendar className="w-4 h-4 text-gray-400" />
+                        {todayDisplay}
+                      </div>
                     </div>
                   </div>
-                </Card>
 
-                {/* Installment Selection Table */}
-                <Card
-              title="Select Installments"
-              subtitle="Partial payment allowed - enter custom amounts"
-              action={
-              <div className="flex gap-1">
-                      <Button
-                  variant="ghost"
-                  size="xs"
-                  onClick={handleDeselectAll}>
-
-                        Clear
-                      </Button>
-                      <Button
-                  variant="secondary"
-                  size="xs"
-                  onClick={handleSelectAllUnpaid}>
-
-                        Select All
-                      </Button>
+                  {/* Cheque / DD fields */}
+                  {['cheque', 'dd'].includes(paymentMode) && (
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-3 p-3 bg-gray-50 rounded-lg border">
+                      <Input
+                        label={`${paymentMode === 'cheque' ? 'Cheque' : 'DD'} Number *`}
+                        value={chequeNo}
+                        onChange={(e) => setChequeNo(e.target.value)}
+                      />
+                      <Input
+                        label="Date *"
+                        type="date"
+                        value={chequeDate}
+                        onChange={(e) => setChequeDate(e.target.value)}
+                      />
+                      <Input
+                        label="Bank *"
+                        value={bankName}
+                        onChange={(e) => setBankName(e.target.value)}
+                      />
                     </div>
-              }>
+                  )}
 
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-xs">
-                      <thead className="bg-gray-50 border-b">
-                        <tr>
-                          <th className="px-3 py-2 text-left w-8">
-                            <input
-                          type="checkbox"
-                          checked={
-                          selectedInstallments.size ===
-                          unpaidInstallments.length &&
-                          unpaidInstallments.length > 0
-                          }
-                          onChange={(e) =>
-                          e.target.checked ?
-                          handleSelectAllUnpaid() :
-                          handleDeselectAll()
-                          }
-                          className="w-3.5 h-3.5 rounded" />
+                  {/* UPI / NEFT / Card fields */}
+                  {['upi', 'neft', 'card'].includes(paymentMode) && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3 p-3 bg-gray-50 rounded-lg border">
+                      <Input
+                        label="Reference / Transaction ID *"
+                        value={referenceNo}
+                        onChange={(e) => setReferenceNo(e.target.value)}
+                      />
+                      {paymentMode === 'card' && <Input label="Card Last 4 Digits" maxLength={4} />}
+                    </div>
+                  )}
 
-                          </th>
-                          <th className="px-3 py-2 text-left font-semibold text-gray-600">
-                            Installment
-                          </th>
-                          <th className="px-3 py-2 text-left font-semibold text-gray-600">
-                            Due Date
-                          </th>
-                          <th className="px-3 py-2 text-right font-semibold text-gray-600">
-                            Net Amount
-                          </th>
-                          <th className="px-3 py-2 text-right font-semibold text-gray-600">
-                            Paid
-                          </th>
-                          <th className="px-3 py-2 text-right font-semibold text-gray-600">
-                            Balance
-                          </th>
-                          <th className="px-3 py-2 text-right font-semibold text-gray-600">
-                            Fine
-                          </th>
-                          <th className="px-3 py-2 text-center font-semibold text-gray-600">
-                            Status
-                          </th>
-                          <th className="px-3 py-2 text-right font-semibold text-gray-600">
-                            Paying
-                          </th>
-                          <th className="px-3 py-2 text-center w-8"></th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y">
-                        {selectedStudent.installments.map((inst) => {
-                      const isSelected = selectedInstallments.has(inst.id);
-                      const isPaid = inst.status === 'paid';
-                      const statusConfig = getStatusConfig(inst.status);
-                      const isExpanded = expandedInstallment === inst.id;
-                      return (
-                        <Fragment key={inst.id}>
-                              <tr
-                            className={`${isSelected ? 'bg-blue-50' : isPaid ? 'bg-green-50/50' : 'hover:bg-gray-50'}`}>
+                  {/* Bank Transfer fields - no date */}
+                  {paymentMode === 'bank_transfer' && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-3 p-3 bg-gray-50 rounded-lg border">
+                      <Input
+                        label="Bank Name *"
+                        value={bankName}
+                        onChange={(e) => setBankName(e.target.value)}
+                      />
+                      <Input
+                        label="Transaction ID *"
+                        value={transactionId}
+                        onChange={(e) => setTransactionId(e.target.value)}
+                      />
+                    </div>
+                  )}
 
-                                <td className="px-3 py-2">
-                                  <input
+                  <div className="mt-3">
+                    <label className="block text-xs font-medium text-gray-700 mb-1">Narration</label>
+                    <textarea
+                      value={narration}
+                      onChange={(e) => setNarration(e.target.value)}
+                      placeholder="Remarks..."
+                      className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
+                      rows={2}
+                    />
+                  </div>
+
+                  {/* Notifications */}
+                  <div className="flex items-center gap-4 mt-3 pt-3 border-t flex-wrap">
+                    <label className="flex items-center gap-2 text-xs cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={sendSMS}
+                        onChange={(e) => setSendSMS(e.target.checked)}
+                        className="w-3.5 h-3.5 rounded"
+                      />
+                      <MessageSquare className="w-3.5 h-3.5 text-gray-500" />
+                      SMS
+                    </label>
+                    <label className="flex items-center gap-2 text-xs cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={sendEmail}
+                        onChange={(e) => setSendEmail(e.target.checked)}
+                        className="w-3.5 h-3.5 rounded"
+                      />
+                      <Mail className="w-3.5 h-3.5 text-gray-500" />
+                      Email
+                    </label>
+                    <label className="flex items-center gap-2 text-xs cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={sendWhatsApp}
+                        onChange={(e) => setSendWhatsApp(e.target.checked)}
+                        className="w-3.5 h-3.5 rounded"
+                      />
+                      <Smartphone className="w-3.5 h-3.5 text-green-600" />
+                      WhatsApp
+                    </label>
+                    <label className="flex items-center gap-2 text-xs cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={sendInApp}
+                        onChange={(e) => setSendInApp(e.target.checked)}
+                        className="w-3.5 h-3.5 rounded"
+                      />
+                      <Bell className="w-3.5 h-3.5 text-purple-500" />
+                      In-App
+                    </label>
+                  </div>
+                </div>
+              </Card>
+
+              {/* Fee Heads Selection */}
+              <Card
+                title="Select Fee Heads"
+                subtitle="Choose fee heads and amounts to collect"
+                action={
+                  <div className="flex gap-1">
+                    <Button variant="ghost" size="xs" onClick={handleDeselectAllFeeHeads}>
+                      Clear
+                    </Button>
+                    <Button variant="secondary" size="xs" onClick={handleSelectAllFeeHeads}>
+                      Select All
+                    </Button>
+                  </div>
+                }
+              >
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs">
+                    <thead className="bg-gray-50 border-b">
+                      <tr>
+                        <th className="px-3 py-2 text-left w-8">
+                          <input
+                            type="checkbox"
+                            checked={
+                              selectedFeeHeadCount === unpaidFeeHeads.length &&
+                              unpaidFeeHeads.length > 0
+                            }
+                            onChange={(e) =>
+                              e.target.checked
+                                ? handleSelectAllFeeHeads()
+                                : handleDeselectAllFeeHeads()
+                            }
+                            className="w-3.5 h-3.5 rounded"
+                          />
+                        </th>
+                        <th className="px-3 py-2 text-left font-semibold text-gray-600">
+                          Fee Head
+                        </th>
+                        <th className="px-3 py-2 text-right font-semibold text-gray-600">Gross</th>
+                        <th className="px-3 py-2 text-right font-semibold text-gray-600">
+                          Concession
+                        </th>
+                        <th className="px-3 py-2 text-right font-semibold text-gray-600">Net</th>
+                        <th className="px-3 py-2 text-right font-semibold text-gray-600">Paid</th>
+                        <th className="px-3 py-2 text-right font-semibold text-gray-600">
+                          Balance
+                        </th>
+                        <th className="px-3 py-2 text-right font-semibold text-gray-600">
+                          Paying
+                        </th>
+                        <th className="px-3 py-2 text-center font-semibold text-gray-600">
+                          Status
+                        </th>
+                        <th className="px-3 py-2 w-12"></th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-100">
+                      {feeData.feeHeads.map((fh) => {
+                        const balance = getFeeHeadBalance(feeData, fh)
+                        const alreadyPaid = feeData.feeHeadPaidAmounts[fh.id] || 0
+                        const entry = paymentEntries[fh.id]
+                        const isFullyPaid = balance === 0
+                        const isSelected = entry?.selected || false
+                        return (
+                          <tr
+                            key={fh.id}
+                            className={`${
+                              isFullyPaid
+                                ? 'bg-green-50/50 opacity-60'
+                                : isSelected
+                                ? 'bg-blue-50/50'
+                                : 'hover:bg-gray-50'
+                            }`}
+                          >
+                            <td className="px-3 py-2.5">
+                              <input
                                 type="checkbox"
                                 checked={isSelected}
-                                onChange={(e) =>
-                                handleInstallmentSelect(
-                                  inst,
-                                  e.target.checked
-                                )
-                                }
-                                disabled={isPaid}
-                                className="w-3.5 h-3.5 rounded disabled:opacity-40" />
-
-                                </td>
-                                <td className="px-3 py-2">
-                                  <div className="font-medium text-gray-900">
-                                    {inst.installmentName}
-                                  </div>
-                                  <div className="text-[10px] text-gray-500">
-                                    {inst.feeHeads.length} fee heads
-                                  </div>
-                                </td>
-                                <td className="px-3 py-2">
-                                  <div>
-                                    {new Date(inst.dueDate).toLocaleDateString(
-                                  'en-IN',
-                                  {
-                                    day: '2-digit',
-                                    month: 'short',
-                                    year: 'numeric'
-                                  }
-                                )}
-                                  </div>
-                                  {inst.daysOverdue > 0 &&
-                              <div className="text-[10px] text-red-600">
-                                      {inst.daysOverdue} days overdue
-                                    </div>
-                              }
-                                </td>
-                                <td className="px-3 py-2 text-right font-medium">
-                                  {formatCurrency(inst.netAmount)}
-                                </td>
-                                <td className="px-3 py-2 text-right text-green-600">
-                                  {formatCurrency(inst.paidAmount)}
-                                </td>
-                                <td className="px-3 py-2 text-right font-semibold text-red-600">
-                                  {formatCurrency(inst.balanceAmount)}
-                                </td>
-                                <td className="px-3 py-2 text-right text-amber-600">
-                                  {inst.fineBalance > 0 ?
-                              formatCurrency(inst.fineBalance) :
-                              '-'}
-                                </td>
-                                <td className="px-3 py-2 text-center">
-                                  <Badge
-                                variant={statusConfig.variant}
-                                size="xs">
-
-                                    {statusConfig.label}
+                                onChange={(e) => handleFeeHeadSelect(fh.id, e.target.checked)}
+                                disabled={isFullyPaid}
+                                className="w-3.5 h-3.5 rounded disabled:opacity-40"
+                              />
+                            </td>
+                            <td className="px-3 py-2.5">
+                              <span className="font-medium text-gray-900">{fh.name}</span>
+                              {isFullyPaid && (
+                                <span className="ml-1">
+                                  <Badge variant="success" size="xs">
+                                    <CheckCircle className="w-2.5 h-2.5" />
+                                    Paid
                                   </Badge>
-                                </td>
-                                <td className="px-3 py-2 text-right">
-                                  {isSelected &&
-                              <span className="font-semibold text-blue-600">
-                                      {formatCurrency(
-                                  (paymentAmounts[inst.id]?.feeAmount ||
-                                  0) + (
-                                  paymentAmounts[inst.id]?.
-                                  fineAmount || 0) - (
-                                  paymentAmounts[inst.id]?.
-                                  discountAmount || 0)
-                                )}
-                                    </span>
+                                </span>
+                              )}
+                            </td>
+                            <td className="px-3 py-2.5 text-right text-gray-600">
+                              {formatCurrency(fh.amount)}
+                            </td>
+                            <td className="px-3 py-2.5 text-right text-green-600">
+                              {fh.discountAmount > 0
+                                ? `-${formatCurrency(fh.discountAmount)}`
+                                : '-'}
+                            </td>
+                            <td className="px-3 py-2.5 text-right font-medium">
+                              {formatCurrency(fh.netAmount)}
+                            </td>
+                            <td className="px-3 py-2.5 text-right text-green-600">
+                              {alreadyPaid > 0 ? formatCurrency(alreadyPaid) : '-'}
+                            </td>
+                            <td className="px-3 py-2.5 text-right font-semibold text-red-600">
+                              {balance > 0 ? formatCurrency(balance) : '-'}
+                            </td>
+                            <td className="px-3 py-2.5 text-right">
+                              {isSelected && !isFullyPaid ? (
+                                <input
+                                  type="number"
+                                  value={entry?.payingAmount || 0}
+                                  onChange={(e) =>
+                                    handleFeeHeadAmountChange(
+                                      fh.id,
+                                      parseFloat(e.target.value) || 0
+                                    )
+                                  }
+                                  min={0}
+                                  max={balance}
+                                  className="w-24 px-2 py-1 text-xs border rounded text-right"
+                                />
+                              ) : (
+                                <span className="text-gray-400">-</span>
+                              )}
+                            </td>
+                            <td className="px-3 py-2.5 text-center">
+                              {isFullyPaid ? (
+                                <Badge variant="success" size="xs">
+                                  Paid
+                                </Badge>
+                              ) : alreadyPaid > 0 ? (
+                                <Badge variant="warning" size="xs">
+                                  Partial
+                                </Badge>
+                              ) : (
+                                <Badge variant="gray" size="xs">
+                                  Unpaid
+                                </Badge>
+                              )}
+                            </td>
+                            <td className="px-3 py-2.5 text-center">
+                              {isSelected && !isFullyPaid && (
+                                <Button
+                                  variant="ghost"
+                                  size="xs"
+                                  onClick={() => handlePayFullFeeHead(fh.id)}
+                                >
+                                  Full
+                                </Button>
+                              )}
+                            </td>
+                          </tr>
+                        )
+                      })}
+                    </tbody>
+
+                    {/* Fine Row */}
+                    {feeData.fineBalance > 0 && (
+                      <tfoot className="bg-amber-50/50 border-t">
+                        <tr>
+                          <td className="px-3 py-2.5"></td>
+                          <td className="px-3 py-2.5 font-medium text-amber-700" colSpan={5}>
+                            <AlertTriangle className="w-3 h-3 inline mr-1" />
+                            Late Fine ({feeData.daysOverdue} days overdue)
+                          </td>
+                          <td className="px-3 py-2.5 text-right font-semibold text-amber-700">
+                            {formatCurrency(feeData.fineBalance)}
+                          </td>
+                          <td className="px-3 py-2.5 text-right">
+                            <input
+                              type="number"
+                              value={finePayingAmount}
+                              onChange={(e) =>
+                                handleFineAmountChange(parseFloat(e.target.value) || 0)
                               }
-                                </td>
-                                <td className="px-3 py-2 text-center">
-                                  {!isPaid &&
-                              <button
-                                onClick={() =>
-                                setExpandedInstallment(
-                                  isExpanded ? null : inst.id
-                                )
-                                }
-                                className="p-1 hover:bg-gray-200 rounded">
+                              min={0}
+                              max={feeData.fineBalance}
+                              className="w-24 px-2 py-1 text-xs border rounded text-right"
+                            />
+                          </td>
+                          <td></td>
+                          <td></td>
+                        </tr>
+                      </tfoot>
+                    )}
 
-                                      {isExpanded ?
-                                <ChevronUp className="w-3.5 h-3.5" /> :
+                    {/* Totals */}
+                    <tfoot className="bg-blue-50 border-t-2 border-blue-200">
+                      <tr>
+                        <td className="px-3 py-2.5"></td>
+                        <td
+                          className="px-3 py-2.5 text-sm font-semibold text-blue-800"
+                          colSpan={6}
+                        >
+                          Total Paying ({selectedFeeHeadCount} fee head
+                          {selectedFeeHeadCount !== 1 ? 's' : ''})
+                        </td>
+                        <td className="px-3 py-2.5 text-right text-sm font-bold text-blue-900">
+                          {formatCurrency(grandTotal)}
+                        </td>
+                        <td></td>
+                        <td></td>
+                      </tr>
+                    </tfoot>
+                  </table>
+                </div>
 
-                                <ChevronDown className="w-3.5 h-3.5" />
-                                }
-                                    </button>
-                              }
-                                </td>
-                              </tr>
-
-                              {/* Expanded Row - Fee Breakdown & Payment Entry */}
-                              {isExpanded && !isPaid &&
-                          <tr>
-                                  <td
-                              colSpan={10}
-                              className="px-3 py-3 bg-gray-50">
-
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                      {/* Fee Breakdown */}
-                                      <div>
-                                        <h5 className="text-xs font-semibold text-gray-700 mb-2">
-                                          Fee Breakdown
-                                        </h5>
-                                        <table className="w-full text-xs">
-                                          <thead>
-                                            <tr className="text-gray-500">
-                                              <th className="text-left py-1">
-                                                Fee Head
-                                              </th>
-                                              <th className="text-right py-1">
-                                                Amount
-                                              </th>
-                                              <th className="text-right py-1">
-                                                Discount
-                                              </th>
-                                              <th className="text-right py-1">
-                                                Net
-                                              </th>
-                                            </tr>
-                                          </thead>
-                                          <tbody className="divide-y divide-gray-200">
-                                            {inst.feeHeads.map((fh) =>
-                                      <tr key={fh.id}>
-                                                <td className="py-1">
-                                                  {fh.name}
-                                                </td>
-                                                <td className="py-1 text-right">
-                                                  {formatCurrency(fh.amount)}
-                                                </td>
-                                                <td className="py-1 text-right text-green-600">
-                                                  {fh.discountAmount > 0 ?
-                                          `-${formatCurrency(fh.discountAmount)}` :
-                                          '-'}
-                                                </td>
-                                                <td className="py-1 text-right font-medium">
-                                                  {formatCurrency(fh.netAmount)}
-                                                </td>
-                                              </tr>
-                                      )}
-                                          </tbody>
-                                        </table>
-                                      </div>
-
-                                      {/* Payment Entry */}
-                                      {isSelected &&
-                                <div className="bg-blue-50 rounded-md p-3">
-                                          <h5 className="text-xs font-semibold text-blue-800 mb-2">
-                                            Payment Entry (Partial Allowed)
-                                          </h5>
-                                          <div className="space-y-2">
-                                            <div className="flex items-center gap-2">
-                                              <label className="text-xs text-gray-600 w-20">
-                                                Fee Amount
-                                              </label>
-                                              <input
-                                        type="number"
-                                        value={
-                                        paymentAmounts[inst.id]?.
-                                        feeAmount || 0
-                                        }
-                                        onChange={(e) =>
-                                        handleAmountChange(
-                                          inst.id,
-                                          'feeAmount',
-                                          parseFloat(
-                                            e.target.value
-                                          ) || 0
-                                        )
-                                        }
-                                        min={0}
-                                        max={inst.balanceAmount}
-                                        className="flex-1 px-2 py-1 text-xs border rounded" />
-
-                                              <span className="text-[10px] text-gray-500">
-                                                /{' '}
-                                                {formatCurrency(
-                                          inst.balanceAmount
-                                        )}
-                                              </span>
-                                              <Button
-                                        variant="ghost"
-                                        size="xs"
-                                        onClick={() =>
-                                        handlePayFull(inst.id)
-                                        }>
-
-                                                Full
-                                              </Button>
-                                            </div>
-                                            {inst.fineBalance > 0 &&
-                                    <div className="flex items-center gap-2">
-                                                <label className="text-xs text-gray-600 w-20">
-                                                  Fine Amount
-                                                </label>
-                                                <input
-                                        type="number"
-                                        value={
-                                        paymentAmounts[inst.id]?.
-                                        fineAmount || 0
-                                        }
-                                        onChange={(e) =>
-                                        handleAmountChange(
-                                          inst.id,
-                                          'fineAmount',
-                                          parseFloat(
-                                            e.target.value
-                                          ) || 0
-                                        )
-                                        }
-                                        min={0}
-                                        max={inst.fineBalance}
-                                        className="flex-1 px-2 py-1 text-xs border rounded" />
-
-                                                <span className="text-[10px] text-gray-500">
-                                                  /{' '}
-                                                  {formatCurrency(
-                                          inst.fineBalance
-                                        )}
-                                                </span>
-                                              </div>
-                                    }
-                                            {showDiscountEntry &&
-                                    hasDiscountPermission &&
-                                    <>
-                                                  <div className="flex items-center gap-2">
-                                                    <label className="text-xs text-gray-600 w-20">
-                                                      Discount
-                                                    </label>
-                                                    <input
-                                          type="number"
-                                          value={
-                                          paymentAmounts[inst.id]?.
-                                          discountAmount || 0
-                                          }
-                                          onChange={(e) =>
-                                          handleAmountChange(
-                                            inst.id,
-                                            'discountAmount',
-                                            parseFloat(
-                                              e.target.value
-                                            ) || 0
-                                          )
-                                          }
-                                          min={0}
-                                          className="flex-1 px-2 py-1 text-xs border rounded" />
-
-                                                  </div>
-                                                  {(paymentAmounts[inst.id]?.
-                                      discountAmount || 0) >
-                                      0 &&
-                                      <div className="flex items-center gap-2">
-                                                      <label className="text-xs text-gray-600 w-20">
-                                                        Reason
-                                                      </label>
-                                                      <input
-                                          type="text"
-                                          value={
-                                          paymentAmounts[
-                                          inst.id]?.
-                                          discountReason ||
-                                          ''
-                                          }
-                                          onChange={(e) =>
-                                          handleDiscountReasonChange(
-                                            inst.id,
-                                            e.target.value
-                                          )
-                                          }
-                                          placeholder="Discount reason (required)"
-                                          className="flex-1 px-2 py-1 text-xs border rounded" />
-
-                                                    </div>
-                                      }
-                                                </>
-                                    }
-                                          </div>
-                                        </div>
-                                }
-                                    </div>
-                                  </td>
-                                </tr>
-                          }
-                            </Fragment>);
-
-                    })}
-                      </tbody>
-                    </table>
+                {/* Action Bar */}
+                <div className="p-3 border-t bg-gray-50 flex items-center justify-between">
+                  <div className="text-xs text-gray-600">
+                    {selectedFeeHeadCount > 0 && (
+                      <>
+                        <span className="font-medium">{selectedFeeHeadCount} fee head(s)</span>
+                        <span className="mx-2">•</span>
+                        <span className="font-semibold text-blue-600">
+                          Total: {formatCurrency(grandTotal)}
+                        </span>
+                      </>
+                    )}
                   </div>
-
-                  {/* Generate Receipt Button */}
-                  <div className="p-3 border-t bg-gray-50 flex items-center justify-between">
-                    <div className="text-xs text-gray-600">
-                      {selectedInstallments.size > 0 &&
-                  <>
-                          <span className="font-medium">
-                            {selectedInstallments.size} installment(s) selected
-                          </span>
-                          <span className="mx-2">•</span>
-                          <span className="font-semibold text-blue-600">
-                            Total: {formatCurrency(grandTotal)}
-                          </span>
-                        </>
-                  }
-                    </div>
-                    <div className="flex gap-2">
-                      <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={resetPaymentForm}>
-
-                        <X className="w-3.5 h-3.5 mr-1" />
-                        Cancel
-                      </Button>
-                      <Button
-                    variant="success"
-                    size="sm"
-                    onClick={handleGenerateReceipt}
-                    disabled={selectedInstallments.size === 0}
-                    loading={isGenerating}>
-
-                        <Receipt className="w-3.5 h-3.5 mr-1" />
-                        Generate Receipt
-                      </Button>
-                    </div>
+                  <div className="flex gap-2">
+                    <Button variant="outline" size="sm" onClick={resetPaymentForm}>
+                      <X className="w-3.5 h-3.5 mr-1" />
+                      Cancel
+                    </Button>
+                    <Button
+                      variant="success"
+                      size="sm"
+                      onClick={handleGenerateReceipt}
+                      disabled={selectedFeeHeadCount === 0 && finePayingAmount <= 0}
+                      loading={isGenerating}
+                    >
+                      <Receipt className="w-3.5 h-3.5 mr-1" />
+                      Generate Receipt
+                    </Button>
                   </div>
-                </Card>
-              </>
-          }
+                </div>
+              </Card>
+            </>
+          )}
 
-            {activeTab === 'history' &&
-          <Card
-            title="Receipt History"
-            subtitle="View, print, or cancel receipts">
-
-                <div className="overflow-x-auto">
+          {/* ==================== HISTORY TAB ==================== */}
+          {activeTab === 'history' && (
+            <Card title="Receipt History" subtitle="View, print, or cancel receipts">
+              <div className="overflow-x-auto">
+                {selectedStudent.receiptHistory.length === 0 ? (
+                  <div className="p-8 text-center text-gray-500">
+                    <History className="w-10 h-10 mx-auto mb-2 text-gray-300" />
+                    <p className="text-sm">No receipts found</p>
+                  </div>
+                ) : (
                   <table className="w-full text-xs">
                     <thead className="bg-gray-50 border-b">
                       <tr>
                         <th className="px-3 py-2 text-left font-semibold text-gray-600">
                           Receipt No
                         </th>
+                        <th className="px-3 py-2 text-left font-semibold text-gray-600">Date</th>
                         <th className="px-3 py-2 text-left font-semibold text-gray-600">
-                          Date
+                          Details
                         </th>
-                        <th className="px-3 py-2 text-left font-semibold text-gray-600">
-                          Installments
-                        </th>
-                        <th className="px-3 py-2 text-left font-semibold text-gray-600">
-                          Mode
-                        </th>
+                        <th className="px-3 py-2 text-left font-semibold text-gray-600">Mode</th>
                         <th className="px-3 py-2 text-right font-semibold text-gray-600">
                           Amount
                         </th>
@@ -2133,123 +2068,107 @@ export function FeeReceipt() {
                       </tr>
                     </thead>
                     <tbody className="divide-y">
-                      {selectedStudent.receiptHistory.map((receipt) =>
-                  <tr
-                    key={receipt.id}
-                    className={
-                    receipt.status === 'cancelled' ?
-                    'bg-red-50/50' :
-                    'hover:bg-gray-50'
-                    }>
-
+                      {selectedStudent.receiptHistory.map((receipt) => (
+                        <tr
+                          key={receipt.id}
+                          className={
+                            receipt.status === 'cancelled' ? 'bg-red-50/50' : 'hover:bg-gray-50'
+                          }
+                        >
                           <td className="px-3 py-2">
-                            <div className="font-medium text-blue-600">
-                              {receipt.receiptNo}
-                            </div>
+                            <div className="font-medium text-blue-600">{receipt.receiptNo}</div>
                           </td>
                           <td className="px-3 py-2">
-                            {new Date(receipt.date).toLocaleDateString(
-                        'en-IN',
-                        {
-                          day: '2-digit',
-                          month: 'short',
-                          year: 'numeric'
-                        }
-                      )}
+                            {new Date(receipt.date).toLocaleDateString('en-IN', {
+                              day: '2-digit',
+                              month: 'short',
+                              year: 'numeric',
+                            })}
                           </td>
                           <td className="px-3 py-2">
-                            <div className="flex flex-wrap gap-1">
-                              {receipt.installments.map((inst, idx) =>
-                        <span
-                          key={idx}
-                          className="px-1.5 py-0.5 bg-gray-100 rounded text-[10px]">
-
-                                  {inst.installmentName.substring(0, 15)}...
-                                </span>
-                        )}
-                            </div>
+                            {receipt.feeHeads.map((fh, i) => (
+                              <div
+                                key={i}
+                                className="text-[10px] text-gray-600 flex justify-between max-w-[250px]"
+                              >
+                                <span>{fh.feeHeadName}</span>
+                                <span className="ml-2">{formatCurrency(fh.feeAmount)}</span>
+                              </div>
+                            ))}
                           </td>
                           <td className="px-3 py-2">{receipt.paymentMode}</td>
                           <td className="px-3 py-2 text-right font-semibold">
                             <span
-                        className={
-                        receipt.status === 'cancelled' ?
-                        'line-through text-gray-400' :
-                        ''
-                        }>
-
+                              className={
+                                receipt.status === 'cancelled'
+                                  ? 'line-through text-gray-400'
+                                  : ''
+                              }
+                            >
                               {formatCurrency(receipt.totalAmount)}
                             </span>
                           </td>
                           <td className="px-3 py-2 text-center">
                             <Badge
-                        variant={
-                        receipt.status === 'completed' ?
-                        'success' :
-                        'danger'
-                        }
-                        size="xs">
-
+                              variant={receipt.status === 'completed' ? 'success' : 'danger'}
+                              size="xs"
+                            >
                               {receipt.status}
                             </Badge>
                           </td>
                           <td className="px-3 py-2">
                             <div className="flex items-center justify-center gap-1">
                               <button
-                          className="p-1 hover:bg-gray-200 rounded"
-                          title="View">
-
+                                className="p-1 hover:bg-gray-200 rounded"
+                                title="View"
+                              >
                                 <Eye className="w-3.5 h-3.5 text-gray-500" />
                               </button>
                               <button
-                          className="p-1 hover:bg-gray-200 rounded"
-                          title="Print">
-
+                                className="p-1 hover:bg-gray-200 rounded"
+                                title="Print"
+                              >
                                 <Printer className="w-3.5 h-3.5 text-gray-500" />
                               </button>
                               <button
-                          className="p-1 hover:bg-gray-200 rounded"
-                          title="Download">
-
+                                className="p-1 hover:bg-gray-200 rounded"
+                                title="Download"
+                              >
                                 <Download className="w-3.5 h-3.5 text-gray-500" />
                               </button>
-                              {receipt.status === 'completed' &&
-                        <button
-                          className="p-1 hover:bg-red-100 rounded"
-                          title="Cancel Receipt"
-                          onClick={() => handleCancelReceipt(receipt)}>
-
+                              {receipt.status === 'completed' && (
+                                <button
+                                  className="p-1 hover:bg-red-100 rounded"
+                                  onClick={() => handleCancelReceipt(receipt)}
+                                >
                                   <XCircle className="w-3.5 h-3.5 text-red-500" />
                                 </button>
-                        }
+                              )}
                             </div>
                           </td>
                         </tr>
-                  )}
+                      ))}
                     </tbody>
                   </table>
-                </div>
-              </Card>
-          }
-          </div>
+                )}
+              </div>
+            </Card>
+          )}
         </div>
-      }
+      </div>
 
-      {/* Receipt Preview Modal */}
+      {/* ==================== RECEIPT PREVIEW MODAL ==================== */}
       <Modal
         isOpen={showReceiptPreview}
         onClose={() => setShowReceiptPreview(false)}
         title="Receipt Preview"
-        size="lg">
-
-        {generatedReceipt &&
-        <div className="p-4">
+        size="xl"
+      >
+        {generatedReceipt && (
+          <div className="p-4">
             <div className="border rounded-lg p-6 bg-white">
-              {/* Header */}
               <div className="text-center border-b pb-4 mb-4">
-                <h2 className="text-xl font-bold text-gray-900">
-                  ABC International School
-                </h2>
+                <h2 className="text-xl font-bold text-gray-900">ABC International School</h2>
                 <p className="text-xs text-gray-500">
                   123 Education Street, Knowledge City - 123456
                 </p>
@@ -2257,31 +2176,20 @@ export function FeeReceipt() {
                   FEE RECEIPT
                 </div>
               </div>
-
-              {/* Receipt Info */}
               <div className="grid grid-cols-2 gap-4 text-sm mb-4">
                 <div>
                   <p>
                     <span className="text-gray-500">Receipt No:</span>{' '}
-                    <strong className="text-blue-600">
-                      {generatedReceipt.receiptNo}
-                    </strong>
+                    <strong className="text-blue-600">{generatedReceipt.receiptNo}</strong>
                   </p>
                   <p>
                     <span className="text-gray-500">Date:</span>{' '}
-                    <strong>
-                      {new Date(generatedReceipt.date).toLocaleDateString(
-                      'en-IN'
-                    )}
-                    </strong>
+                    <strong>{todayDisplay}</strong>
                   </p>
                   <p>
-                    <span className="text-gray-500">Payment Mode:</span>{' '}
+                    <span className="text-gray-500">Mode:</span>{' '}
                     <strong>
-                      {
-                    paymentModeOptions.find((p) => p.value === paymentMode)?.
-                    label
-                    }
+                      {paymentModeOptions.find((p) => p.value === paymentMode)?.label}
                     </strong>
                   </p>
                 </div>
@@ -2291,74 +2199,48 @@ export function FeeReceipt() {
                     <strong>{generatedReceipt.student.name}</strong>
                   </p>
                   <p>
-                    <span className="text-gray-500">Admission No:</span>{' '}
+                    <span className="text-gray-500">Adm No:</span>{' '}
                     <strong>{generatedReceipt.student.admissionNo}</strong>
                   </p>
                   <p>
                     <span className="text-gray-500">Class:</span>{' '}
                     <strong>{generatedReceipt.student.class}</strong>
                   </p>
+                  <p>
+                    <span className="text-gray-500">Branch:</span>{' '}
+                    <strong>{generatedReceipt.student.branch}</strong>
+                  </p>
                 </div>
               </div>
 
-              {/* Fee Table */}
               <table className="w-full text-sm mb-4">
                 <thead className="bg-gray-100">
                   <tr>
-                    <th className="px-3 py-2 text-left border">Installment</th>
-                    <th className="px-3 py-2 text-right border">Fee</th>
-                    <th className="px-3 py-2 text-right border">Fine</th>
-                    <th className="px-3 py-2 text-right border">Discount</th>
-                    <th className="px-3 py-2 text-right border">Total</th>
+                    <th className="px-3 py-2 text-left border">Fee Head</th>
+                    <th className="px-3 py-2 text-right border">Amount</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {generatedReceipt.installments.map(
-                  (inst: any, idx: number) =>
-                  <tr key={idx}>
-                        <td className="px-3 py-2 border">
-                          {inst.installmentName}
-                        </td>
-                        <td className="px-3 py-2 text-right border">
-                          {formatCurrency(inst.feeAmount)}
-                        </td>
-                        <td className="px-3 py-2 text-right border">
-                          {inst.fineAmount > 0 ?
-                      formatCurrency(inst.fineAmount) :
-                      '-'}
-                        </td>
-                        <td className="px-3 py-2 text-right border text-green-600">
-                          {inst.discountAmount > 0 ?
-                      `-${formatCurrency(inst.discountAmount)}` :
-                      '-'}
-                        </td>
-                        <td className="px-3 py-2 text-right border font-medium">
-                          {formatCurrency(
-                        inst.feeAmount +
-                        inst.fineAmount -
-                        inst.discountAmount
-                      )}
-                        </td>
-                      </tr>
-
-                )}
+                  {generatedReceipt.feeHeads.map((fh: any, i: number) => (
+                    <tr key={i}>
+                      <td className="px-3 py-2 border">{fh.feeHeadName}</td>
+                      <td className="px-3 py-2 text-right border">
+                        {formatCurrency(fh.feeAmount)}
+                      </td>
+                    </tr>
+                  ))}
+                  {generatedReceipt.fineAmount > 0 && (
+                    <tr className="bg-amber-50">
+                      <td className="px-3 py-2 border text-amber-700 font-medium">Late Fine</td>
+                      <td className="px-3 py-2 text-right border text-amber-700">
+                        {formatCurrency(generatedReceipt.fineAmount)}
+                      </td>
+                    </tr>
+                  )}
                 </tbody>
                 <tfoot className="bg-green-50">
                   <tr>
-                    <td className="px-3 py-3 border font-bold">Total</td>
-                    <td className="px-3 py-3 text-right border">
-                      {formatCurrency(generatedReceipt.totalFeeAmount)}
-                    </td>
-                    <td className="px-3 py-3 text-right border">
-                      {generatedReceipt.totalFineAmount > 0 ?
-                    formatCurrency(generatedReceipt.totalFineAmount) :
-                    '-'}
-                    </td>
-                    <td className="px-3 py-3 text-right border text-green-600">
-                      {generatedReceipt.totalDiscountAmount > 0 ?
-                    `-${formatCurrency(generatedReceipt.totalDiscountAmount)}` :
-                    '-'}
-                    </td>
+                    <td className="px-3 py-3 border font-bold">Grand Total</td>
                     <td className="px-3 py-3 text-right border font-bold text-green-700 text-lg">
                       {formatCurrency(generatedReceipt.grandTotal)}
                     </td>
@@ -2366,58 +2248,61 @@ export function FeeReceipt() {
                 </tfoot>
               </table>
 
-              {/* Amount in Words */}
               <div className="p-3 bg-gray-50 rounded text-sm mb-4">
                 <span className="text-gray-500">Amount in Words: </span>
-                <strong>
-                  Rupees {numberToWords(generatedReceipt.grandTotal)} Only
-                </strong>
+                <strong>Rupees {numberToWords(generatedReceipt.grandTotal)} Only</strong>
               </div>
-
-              {generatedReceipt.narration &&
-            <div className="text-sm mb-4">
+              {generatedReceipt.narration && (
+                <div className="text-sm mb-4">
                   <span className="text-gray-500">Narration: </span>
                   <span className="italic">{generatedReceipt.narration}</span>
                 </div>
-            }
-
-              {/* Footer */}
+              )}
               <div className="flex justify-between items-end pt-4 border-t text-xs text-gray-500">
                 <div>
                   <p>
-                    Auto Ledger Posted:{' '}
-                    <CheckCircle className="w-3 h-3 inline text-green-500" />
+                    Ledger: <CheckCircle className="w-3 h-3 inline text-green-500" />
                   </p>
                   <p>
                     SMS:{' '}
-                    {generatedReceipt.sendSMS ?
-                  <CheckCircle className="w-3 h-3 inline text-green-500" /> :
-
-                  <X className="w-3 h-3 inline text-gray-400" />
-                  }
+                    {generatedReceipt.sendSMS ? (
+                      <CheckCircle className="w-3 h-3 inline text-green-500" />
+                    ) : (
+                      <X className="w-3 h-3 inline text-gray-400" />
+                    )}
                   </p>
                   <p>
                     Email:{' '}
-                    {generatedReceipt.sendEmail ?
-                  <CheckCircle className="w-3 h-3 inline text-green-500" /> :
-
-                  <X className="w-3 h-3 inline text-gray-400" />
-                  }
+                    {generatedReceipt.sendEmail ? (
+                      <CheckCircle className="w-3 h-3 inline text-green-500" />
+                    ) : (
+                      <X className="w-3 h-3 inline text-gray-400" />
+                    )}
+                  </p>
+                  <p>
+                    WhatsApp:{' '}
+                    {generatedReceipt.sendWhatsApp ? (
+                      <CheckCircle className="w-3 h-3 inline text-green-500" />
+                    ) : (
+                      <X className="w-3 h-3 inline text-gray-400" />
+                    )}
+                  </p>
+                  <p>
+                    In-App:{' '}
+                    {generatedReceipt.sendInApp ? (
+                      <CheckCircle className="w-3 h-3 inline text-green-500" />
+                    ) : (
+                      <X className="w-3 h-3 inline text-gray-400" />
+                    )}
                   </p>
                 </div>
                 <div className="text-center">
-                  <div className="w-32 border-t border-gray-300 pt-1">
-                    Authorized Signatory
-                  </div>
+                  <div className="w-32 border-t border-gray-300 pt-1">Authorized Signatory</div>
                 </div>
               </div>
             </div>
-
             <div className="flex justify-center gap-3 mt-4 pt-4 border-t">
-              <Button
-              variant="outline"
-              onClick={() => setShowReceiptPreview(false)}>
-
+              <Button variant="outline" onClick={() => setShowReceiptPreview(false)}>
                 <X className="w-3.5 h-3.5 mr-1" />
                 Cancel
               </Button>
@@ -2427,28 +2312,25 @@ export function FeeReceipt() {
               </Button>
             </div>
           </div>
-        }
+        )}
       </Modal>
 
-      {/* Success Modal */}
+      {/* ==================== SUCCESS MODAL ==================== */}
       <Modal
         isOpen={showReceiptSuccess}
         onClose={() => {
-          setShowReceiptSuccess(false);
-          resetPaymentForm();
+          setShowReceiptSuccess(false)
+          resetPaymentForm()
         }}
         title="Receipt Generated!"
-        size="sm">
-
+        size="sm"
+      >
         <div className="p-6 text-center">
           <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
             <CheckCircle className="w-10 h-10 text-green-600" />
           </div>
           <p className="text-sm text-gray-600 mb-2">
-            Receipt No:{' '}
-            <strong className="text-blue-600">
-              {generatedReceipt?.receiptNo}
-            </strong>
+            Receipt: <strong className="text-blue-600">{generatedReceipt?.receiptNo}</strong>
           </p>
           <p className="text-sm text-gray-600 mb-4">
             Amount:{' '}
@@ -2457,11 +2339,7 @@ export function FeeReceipt() {
             </strong>
           </p>
           <div className="flex justify-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => alert('Downloading...')}>
-
+            <Button variant="outline" size="sm" onClick={() => alert('Downloading...')}>
               <Download className="w-3.5 h-3.5 mr-1" />
               PDF
             </Button>
@@ -2475,58 +2353,47 @@ export function FeeReceipt() {
             size="sm"
             className="mt-3"
             onClick={() => {
-              setShowReceiptSuccess(false);
-              resetPaymentForm();
-            }}>
-
+              setShowReceiptSuccess(false)
+              resetPaymentForm()
+            }}
+          >
             Close
           </Button>
         </div>
       </Modal>
 
-      {/* Cancel Receipt Modal */}
+      {/* ==================== CANCEL MODAL ==================== */}
       <Modal
         isOpen={showCancelModal}
         onClose={() => setShowCancelModal(false)}
         title="Cancel Receipt"
-        size="sm">
-
+        size="sm"
+      >
         <div className="p-4">
           <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
             <div className="flex items-center gap-2 text-red-700 text-sm">
               <AlertTriangle className="w-4 h-4" />
-              <span className="font-medium">
-                Warning: This action will reverse all ledger entries
-              </span>
+              <span className="font-medium">This will reverse all ledger entries</span>
             </div>
           </div>
           <p className="text-sm text-gray-600 mb-3">
             Receipt: <strong>{cancellingReceipt?.receiptNo}</strong>
           </p>
           <p className="text-sm text-gray-600 mb-4">
-            Amount:{' '}
-            <strong>
-              {formatCurrency(cancellingReceipt?.totalAmount || 0)}
-            </strong>
+            Amount: <strong>{formatCurrency(cancellingReceipt?.totalAmount || 0)}</strong>
           </p>
           <div className="mb-4">
-            <label className="block text-xs font-medium text-gray-700 mb-1">
-              Cancellation Reason *
-            </label>
+            <label className="block text-xs font-medium text-gray-700 mb-1">Reason *</label>
             <textarea
               value={cancelReason}
               onChange={(e) => setCancelReason(e.target.value)}
-              placeholder="Enter reason for cancellation..."
+              placeholder="Reason for cancellation..."
               className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm"
-              rows={3} />
-
+              rows={3}
+            />
           </div>
           <div className="flex justify-end gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowCancelModal(false)}>
-
+            <Button variant="outline" size="sm" onClick={() => setShowCancelModal(false)}>
               Close
             </Button>
             <Button variant="danger" size="sm" onClick={confirmCancelReceipt}>
@@ -2535,69 +2402,8 @@ export function FeeReceipt() {
           </div>
         </div>
       </Modal>
-    </div>);
-
+    </div>
+  )
 }
-// Utility
-function numberToWords(num: number): string {
-  const ones = [
-  '',
-  'One',
-  'Two',
-  'Three',
-  'Four',
-  'Five',
-  'Six',
-  'Seven',
-  'Eight',
-  'Nine',
-  'Ten',
-  'Eleven',
-  'Twelve',
-  'Thirteen',
-  'Fourteen',
-  'Fifteen',
-  'Sixteen',
-  'Seventeen',
-  'Eighteen',
-  'Nineteen'];
 
-  const tens = [
-  '',
-  '',
-  'Twenty',
-  'Thirty',
-  'Forty',
-  'Fifty',
-  'Sixty',
-  'Seventy',
-  'Eighty',
-  'Ninety'];
-
-  if (num === 0) return 'Zero';
-  const convert = (n: number): string => {
-    if (n === 0) return '';
-    if (n < 20) return ones[n];
-    if (n < 100)
-    return tens[Math.floor(n / 10)] + (n % 10 ? ' ' + ones[n % 10] : '');
-    return (
-      ones[Math.floor(n / 100)] +
-      ' Hundred' + (
-      n % 100 ? ' ' + convert(n % 100) : ''));
-
-  };
-  if (num >= 10000000)
-  return (
-    convert(Math.floor(num / 10000000)) +
-    ' Crore ' +
-    numberToWords(num % 10000000));
-
-  if (num >= 100000)
-  return (
-    convert(Math.floor(num / 100000)) + ' Lakh ' + numberToWords(num % 100000));
-
-  if (num >= 1000)
-  return convert(Math.floor(num / 1000)) + ' Thousand ' + convert(num % 1000);
-  return convert(num);
-}
-export default FeeReceipt;
+export default FeeReceipt

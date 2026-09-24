@@ -181,6 +181,82 @@ export const pluginsRegistry: Record<string, () => any> = {
     'PaymentAnalytics'
   ),
 
+  // ── Payment Gateway : Online Payment (moved from Finance) ─────────────────
+  'online-payment-dashboard': rp(
+    () => import('../plugins/payment-gateway/OnlinePaymentDashboard'),
+    'OnlinePaymentDashboard'
+  ),
+
+  'online-transaction-list': rp(
+    () => import('../plugins/payment-gateway/OnlineTransactionList'),
+    'OnlineTransactionList'
+  ),
+
+  'failed-disputed-transactions': rp(
+    () => import('../plugins/payment-gateway/FailedDisputedTransactions.tsx'),
+    'FailedDisputedTransactions'
+  ),
+
+  'initiate-online-payment': rp(
+    () => import('../plugins/payment-gateway/InitiateOnlinePayment'),
+    'InitiateOnlinePayment'
+  ),
+
+  'online-payment-retry-status': rp(
+    () => import('../plugins/payment-gateway/OnlinePaymentRetryStatus'),
+    'OnlinePaymentRetryStatus'
+  ),
+
+  'online-refund-processing': rp(
+    () => import('../plugins/payment-gateway/OnlineRefundProcessing'),
+    'OnlineRefundProcessing'
+  ),
+
+  'gateway-settlement-import': rp(
+    () => import('../plugins/payment-gateway/GatewaySettlementImport'),
+    'GatewaySettlementImport'
+  ),
+
+  'online-payment-reconciliation': rp(
+    () => import('../plugins/payment-gateway/OnlinePaymentReconciliation'),
+    'OnlinePaymentReconciliation'
+  ),
+
+  'online-payment-report': rp(
+    () => import('../plugins/payment-gateway/OnlinePaymentReport'),
+    'OnlinePaymentReport'
+  ),
+
+  'gateway-wise-collection-summary': rp(
+    () => import('../plugins/payment-gateway/GatewayWiseCollectionSummary'),
+    'GatewayWiseCollectionSummary'
+  ),
+
+  'settlement-mismatch-report': rp(
+    () => import('../plugins/payment-gateway/SettlementMismatchReport'),
+    'SettlementMismatchReport'
+  ),
+
+  'payment-gateway-master': rp(
+    () => import('../plugins/payment-gateway/PaymentGatewayMaster'),
+    'PaymentGatewayMaster'
+  ),
+
+  'online-payment-setup': rp(
+    () => import('../plugins/payment-gateway/OnlinePaymentSetup'),
+    'OnlinePaymentSetup'
+  ),
+
+  'online-payment-account-mapping': rp(
+    () => import('../plugins/payment-gateway/OnlinePaymentAccountMapping'),
+    'OnlinePaymentAccountMapping'
+  ),
+
+  'online-payment-notification-templates': rp(
+    () => import('../plugins/payment-gateway/OnlinePaymentNotificationTemplates'),
+    'OnlinePaymentNotificationTemplates'
+  ),
+
   // ── Email ──────────────────────────────────────────────────────────────────
   'smtp-domain-setup': rp(
     () => import('../plugins/email/SmtpDomainSetup'),

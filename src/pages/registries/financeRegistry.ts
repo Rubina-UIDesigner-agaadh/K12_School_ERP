@@ -9,25 +9,13 @@ export const financeRegistry: Record<string, () => any> = {
   'day-book': rp(() => import('../finance/ledgers/DayBook'), 'DayBook'),
   'cash-book': rp(() => import('../finance/ledgers/CashBook'), 'CashBook'),
   'bank-book': rp(() => import('../finance/ledgers/BankBook'), 'BankBook'),
-  'trial-balance': rp(
-    () => import('../finance/ledgers/TrialBalance'),
-    'TrialBalance'
-  ),
   'income-expenditure': rp(
     () => import('../finance/ledgers/IncomeExpenditure'),
     'IncomeExpenditure'
   ),
-  'profit-loss': rp(
-    () => import('../finance/ledgers/ProfitLoss'),
-    'ProfitLoss'
-  ),
   'balance-sheet': rp(
     () => import('../finance/ledgers/BalanceSheet'),
     'BalanceSheet'
-  ),
-  'bank-reconciliation': rp(
-    () => import('../finance/ledgers/BankReconciliation'),
-    'BankReconciliation'
   ),
   'ledger-audit-trail': rp(
     () => import('../finance/ledgers/LedgerAuditTrail'),
@@ -47,73 +35,43 @@ export const financeRegistry: Record<string, () => any> = {
     () => import('../finance/fees/FeePendingList'),
     'FeePendingList'
   ),
-  'classwise-fee-status': rp(
-    () => import('../finance/fees/ClasswiseFeeStatus'),
-    'ClasswiseFeeStatus'
-  ),
   'fee-collection-register': rp(
     () => import('../finance/fees/FeeCollectionRegister'),
     'FeeCollectionRegister'
   ),
   'fee-receipt': rp(() => import('../finance/fees/FeeReceipt'), 'FeeReceipt'),
-  'fee-opening': rp(() => import('../finance/fees/FeeOpening'), 'FeeOpening'),
   'student-fee-process': rp(
     () => import('../finance/fees/StudentFeeProcess'),
     'StudentFeeProcess'
   ),
-  'divisionwise-fee': rp(
-    () => import('../finance/fees/DivisionwiseFee'),
-    'DivisionwiseFee'
-  ),
-  'receipt-cheque-clear': rp(
-    () => import('../finance/fees/ReceiptChequeClear'),
-    'ReceiptChequeClear'
-  ),
   'fee-receipt-bulk': rp(
     () => import('../finance/fees/FeeReceiptBulk'),
     'FeeReceiptBulk'
-  ),
-  'fee-refund-bulk': rp(
-    () => import('../finance/fees/FeeRefundBulk'),
-    'FeeRefundBulk'
-  ),
-  'fee-invoice': rp(() => import('../finance/fees/FeeInvoice'), 'FeeInvoice'),
-  'fee-invoice-import': rp(
-    () => import('../finance/fees/FeeInvoiceImport'),
-    'FeeInvoiceImport'
   ),
   'fee-refund': rp(() => import('../finance/fees/FeeRefund'), 'FeeRefund'),
   'assign-exemption-type': rp(
     () => import('../finance/fees/AssignExemptionType'),
     'AssignExemptionType'
   ),
-  'late-fee-fine-posting': rp(
-    () => import('../finance/fees/LateFeeAndFinePosting'),
-    'LateFeeAndFinePosting'
-  ),
-  'fee-receipt-cancellation': rp(
-    () => import('../finance/fees/FeeReceiptCancellation'),
-    'FeeReceiptCancellation'
-  ),
-  'fee-auto-demand-scheduler': rp(
-    () => import('../finance/fees/FeeAutoDemandScheduler'),
-    'FeeAutoDemandScheduler'
-  ),
   'fee-collection-reports': rp(
     () => import('../finance/fees/FeeCollectionReports'),
-    'FeeCollectionReports'
+    'FeeReportsPage'
   ),
-  'fee-defaulter-list': rp(
-    () => import('../finance/fees/FeeDefaulterList'),
-    'FeeDefaulterList'
+  'branch-transfer': rp(
+    () => import('../finance/fees/BranchTransfer'),
+    'BranchTransfer'
   ),
-  'fee-discount-exemption-report': rp(
-    () => import('../finance/fees/FeeDiscountExemptionReport'),
-    'FeeDiscountExemptionReport'
+  'fee-structure': rp(
+    () => import('../finance/fees/FeeStructure'),
+    'FeeStructure'
   ),
-  'fee-headwise-collection-summary': rp(
-    () => import('../finance/fees/FeeHeadwiseCollectionSummary'),
-    'FeeHeadwiseCollectionSummary'
+  'royalty-collection': rp(
+    () => import('../finance/fees/RoyaltyCollection'),
+    'RoyaltyCollection'
+  ),
+  'fee-receipt-template': rp(
+    () => import('../finance/fees/FeeReceiptTemplate'),
+    'FeeReceiptTemplate'
   ),
 
   // Charge
@@ -125,10 +83,6 @@ export const financeRegistry: Record<string, () => any> = {
   'charge-receipt': rp(
     () => import('../finance/charge/ChargeReceipt'),
     'ChargeReceipt'
-  ),
-  'charge-posting': rp(
-    () => import('../finance/charge/ChargePosting'),
-    'ChargePosting'
   ),
   'charge-receipt-import': rp(
     () => import('../finance/charge/ChargeReceiptImport'),
@@ -146,11 +100,6 @@ export const financeRegistry: Record<string, () => any> = {
     () => import('../finance/charge/ChargeMaster'),
     'ChargeMaster'
   ),
-  'charge-account-mapping': rp(
-    () => import('../finance/charge/ChargeAccountMapping'),
-    'ChargeAccountMapping'
-  ),
-
   // Scholarship
   'scholarship-summary-dashboard': rp(
     () => import('../finance/scholarship/ScholarshipSummaryDashboard'),
@@ -234,20 +183,8 @@ export const financeRegistry: Record<string, () => any> = {
   ),
 
   // Account
-  'select-account': rp(
-    () => import('../finance/account/SelectAccount'),
-    'SelectAccount'
-  ),
-  'account-summary-dashboard': rp(
-    () => import('../finance/account/AccountSummaryDashboard'),
-    'AccountSummaryDashboard'
-  ),
-  'accounting-year-master': rp(
-    () => import('../finance/account/AccountingYearMaster'),
-    'AccountingYearMaster'
-  ),
   'account-master': rp(
-    () => import('../finance/account/AccountMaster'),
+    () => import('../finance/ledgers/AccountMaster'),
     'AccountMaster'
   ),
 
@@ -345,66 +282,4 @@ export const financeRegistry: Record<string, () => any> = {
     'ExpenseSetup'
   ),
 
-  // Online Payment
-  'online-payment-dashboard': rp(
-    () => import('../finance/online-payment/OnlinePaymentDashboard'),
-    'OnlinePaymentDashboard'
-  ),
-  'online-transaction-list': rp(
-    () => import('../finance/online-payment/OnlineTransactionList'),
-    'OnlineTransactionList'
-  ),
-  'failed-disputed-transactions': rp(
-    () => import('../finance/online-payment/FailedDisputedTransactions'),
-    'FailedDisputedTransactions'
-  ),
-  'initiate-online-payment': rp(
-    () => import('../finance/online-payment/InitiateOnlinePayment'),
-    'InitiateOnlinePayment'
-  ),
-  'online-payment-retry-status': rp(
-    () => import('../finance/online-payment/OnlinePaymentRetryStatus'),
-    'OnlinePaymentRetryStatus'
-  ),
-  'online-refund-processing': rp(
-    () => import('../finance/online-payment/OnlineRefundProcessing'),
-    'OnlineRefundProcessing'
-  ),
-  'gateway-settlement-import': rp(
-    () => import('../finance/online-payment/GatewaySettlementImport'),
-    'GatewaySettlementImport'
-  ),
-  'online-payment-reconciliation': rp(
-    () => import('../finance/online-payment/OnlinePaymentReconciliation'),
-    'OnlinePaymentReconciliation'
-  ),
-  'online-payment-report': rp(
-    () => import('../finance/online-payment/OnlinePaymentReport'),
-    'OnlinePaymentReport'
-  ),
-  'gateway-wise-collection-summary': rp(
-    () => import('../finance/online-payment/GatewayWiseCollectionSummary'),
-    'GatewayWiseCollectionSummary'
-  ),
-  'settlement-mismatch-report': rp(
-    () => import('../finance/online-payment/SettlementMismatchReport'),
-    'SettlementMismatchReport'
-  ),
-  'payment-gateway-master': rp(
-    () => import('../finance/online-payment/PaymentGatewayMaster'),
-    'PaymentGatewayMaster'
-  ),
-  'online-payment-setup': rp(
-    () => import('../finance/online-payment/OnlinePaymentSetup'),
-    'OnlinePaymentSetup'
-  ),
-  'online-payment-account-mapping': rp(
-    () => import('../finance/online-payment/OnlinePaymentAccountMapping'),
-    'OnlinePaymentAccountMapping'
-  ),
-  'online-payment-notification-templates': rp(
-    () =>
-    import('../finance/online-payment/OnlinePaymentNotificationTemplates'),
-    'OnlinePaymentNotificationTemplates'
-  )
 };

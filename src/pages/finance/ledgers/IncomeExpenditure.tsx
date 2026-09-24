@@ -19,7 +19,6 @@ import {
   Info,
   AlertCircle,
   CheckCircle,
-  BarChart3,
   ArrowUpRight,
   ArrowDownRight,
   Scale,
@@ -27,16 +26,10 @@ import {
   X,
   Check } from
 'lucide-react';
-import { ReportFilters } from '../../../components/ReportFilters';
 interface Branch {
   id: string;
   name: string;
   code: string;
-}
-interface Batch {
-  id: string;
-  name: string;
-  year: string;
 }
 interface FinancialItem {
   id: string;
@@ -70,6 +63,12 @@ const branches: Branch[] = [
   name: 'South Campus',
   code: 'SC'
 }];
+
+interface Batch {
+  id: string;
+  name: string;
+  year: string;
+}
 
 const batches: Batch[] = [
 {
@@ -370,13 +369,14 @@ export function IncomeExpenditure() {
     branches.map((b) => b.id)
   );
   const [selectedBatch, setSelectedBatch] = useState('BT001');
-  const [showComparison, setShowComparison] = useState(true);
+  const [branchDropdownOpen, setBranchDropdownOpen] = useState(false);
+  // Current + previous year are always shown side by side
+  const showComparison = true;
   const [expandedIncomeCategories, setExpandedIncomeCategories] = useState<
     string[]>(
     ['Fee Income', 'Other Income']);
   const [expandedExpenditureCategories, setExpandedExpenditureCategories] =
   useState<string[]>(['Salaries & Wages', 'Administrative Expenses']);
-  const [branchDropdownOpen, setBranchDropdownOpen] = useState(false);
   const [showBranchBreakdown, setShowBranchBreakdown] = useState(true);
   const formatCurrency = (amount: number) =>
   new Intl.NumberFormat('en-IN', {
@@ -651,40 +651,26 @@ export function IncomeExpenditure() {
         </div>
       </div>
 
-      <ReportFilters />
-
       {/* Controls */}
       <Card className="p-4">
         <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center justify-between">
           <div className="flex flex-wrap gap-4 items-center">
+            {/* Academic Year */}
             <div className="flex items-center gap-2">
               <Calendar className="w-5 h-5 text-gray-500" />
               <Select
                 value={selectedYear}
                 onChange={setSelectedYear}
                 options={[
-                {
-                  value: '2024-25',
-                  label: 'FY 2024-25'
-                },
-                {
-                  value: '2023-24',
-                  label: 'FY 2023-24'
-                },
-                {
-                  value: '2022-23',
-                  label: 'FY 2022-23'
-                },
-                {
-                  value: '2021-22',
-                  label: 'FY 2021-22'
-                }]
+                { value: '2024-25', label: 'FY 2024-25' },
+                { value: '2023-24', label: 'FY 2023-24' },
+                { value: '2022-23', label: 'FY 2022-23' },
+                { value: '2021-22', label: 'FY 2021-22' }]
                 }
                 className="w-40" />
-
             </div>
 
-            {/* Multi-select Branch Dropdown */}
+            {/* Branch */}
             <div className="relative">
               <div
                 className="flex items-center gap-2 px-3 py-2 bg-white border rounded-lg cursor-pointer min-w-[200px]"
@@ -733,7 +719,7 @@ export function IncomeExpenditure() {
               }
             </div>
 
-            {/* Batch Selector */}
+            {/* Batch */}
             <Select
               value={selectedBatch}
               onChange={setSelectedBatch}
@@ -742,24 +728,6 @@ export function IncomeExpenditure() {
                 label: `Batch ${b.name}`
               }))}
               className="w-40" />
-
-
-            <div className="flex items-center gap-2 px-3 py-2 bg-gray-100 rounded-lg">
-              <input
-                type="checkbox"
-                id="showComparison"
-                checked={showComparison}
-                onChange={(e) => setShowComparison(e.target.checked)}
-                className="w-4 h-4 rounded" />
-
-              <label
-                htmlFor="showComparison"
-                className="text-sm font-medium text-gray-700 cursor-pointer">
-
-                <BarChart3 className="w-4 h-4 inline mr-1" />
-                Compare
-              </label>
-            </div>
 
             <div className="flex items-center gap-2 px-3 py-2 bg-gray-100 rounded-lg">
               <input
@@ -785,27 +753,6 @@ export function IncomeExpenditure() {
         </div>
       </Card>
 
-      {/* Selected Branches Tags */}
-      {selectedBranches.length > 0 &&
-      selectedBranches.length < branches.length &&
-      <div className="flex flex-wrap gap-2">
-            {branches.
-        filter((b) => selectedBranches.includes(b.id)).
-        map((branch) =>
-        <Badge
-          key={branch.id}
-          variant="primary"
-          className="flex items-center gap-1">
-
-                  {branch.name}
-                  <X
-            className="w-3 h-3 cursor-pointer"
-            onClick={() => toggleBranch(branch.id)} />
-
-                </Badge>
-        )}
-          </div>
-      }
 
       {/* Branch-wise Summary Cards */}
       {selectedBranches.length > 1 &&
@@ -945,21 +892,31 @@ export function IncomeExpenditure() {
           <div className="bg-red-50 p-3 border-r border-gray-300">
             <div className="flex justify-between items-center">
               <span className="font-semibold text-red-800">EXPENDITURE</span>
-              {showComparison &&
-              <span className="text-xs text-red-600 font-medium">
-                  Previous Year
+              <div className="flex items-center gap-4">
+                {showComparison &&
+                <span className="text-xs text-red-400 font-medium w-28 text-right">
+                    Previous Year
+                  </span>
+                }
+                <span className="text-xs text-red-700 font-bold w-32 text-right">
+                  Current Year
                 </span>
-              }
+              </div>
             </div>
           </div>
           <div className="bg-green-50 p-3">
             <div className="flex justify-between items-center">
               <span className="font-semibold text-green-800">INCOME</span>
-              {showComparison &&
-              <span className="text-xs text-green-600 font-medium">
-                  Previous Year
+              <div className="flex items-center gap-4">
+                {showComparison &&
+                <span className="text-xs text-green-500 font-medium w-28 text-right">
+                    Previous Year
+                  </span>
+                }
+                <span className="text-xs text-green-700 font-bold w-32 text-right">
+                  Current Year
                 </span>
-              }
+              </div>
             </div>
           </div>
         </div>

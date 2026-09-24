@@ -1,1164 +1,912 @@
-import React, { useState } from 'react';
-import { Card } from '../../../components/ui/Card';
-import { Button } from '../../../components/ui/Button';
-import { Input } from '../../../components/ui/Input';
-import { Select } from '../../../components/ui/Select';
-import { Table } from '../../../components/ui/Table';
-import { Badge } from '../../../components/ui/Badge';
+import React, { useState, Fragment } from 'react'
+import { Card } from '../../../components/ui/Card'
+import { Button } from '../../../components/ui/Button'
+import { Input } from '../../../components/ui/Input'
+import { Select } from '../../../components/ui/Select'
+import { Badge } from '../../../components/ui/Badge'
 import {
   Search,
-  Filter,
-  Bell,
-  Download,
-  FileText,
+  RotateCcw,
   ChevronDown,
   ChevronUp,
-  RefreshCw,
-  X,
+  XCircle,
+  Eye,
+  Bell,
   Calendar,
-  Clock,
-  User,
-  Phone,
-  Mail,
-  MapPin,
-  IndianRupee,
   AlertTriangle,
-  AlertCircle,
   Send,
   MessageSquare,
-  Eye,
-  Printer,
-  History,
-  TrendingUp,
-  Users,
-  Receipt,
-  Banknote,
-  Hash,
-  Building,
-  GraduationCap,
-  CheckCircle,
-  XCircle } from
-'lucide-react';
-import { ReportFilters } from '../../../components/ReportFilters';
-interface FeeHead {
-  name: string;
-  totalAmount: number;
-  paidAmount: number;
-  pendingAmount: number;
-  dueDate: string;
+} from 'lucide-react'
+
+// --- Types ---
+interface UnpaidFeeDetail {
+  id: string
+  feeHead: string
+  amount: number
+  dueDate: string
 }
-interface PaymentHistory {
-  receiptNo: string;
-  date: string;
-  amount: number;
-  mode: string;
-  installment: string;
+
+interface PendingStudent {
+  id: string
+  regNo: string
+  firstName: string
+  lastName: string
+  feeStructure: string
+  centre: string
+  class: string
+  division: string
+  term: string
+  year: string
+  amount: number
+  discountAmount: number
+  finalAmount: number
+  paidAmount: number
+  pendingAmount: number
+  status: 'Overdue' | 'Due Soon' | 'Unpaid' | 'Partially Paid'
+  unpaidDetails: UnpaidFeeDetail[]
 }
-interface PendingFeeData {
-  id: string;
-  studentName: string;
-  fatherName: string;
-  motherName: string;
-  grNo: string;
-  class: string;
-  section: string;
-  rollNo: string;
-  category: string;
-  admissionDate: string;
-  parentContact: string;
-  parentEmail: string;
-  address: string;
-  installment: string;
-  feeStructure: string;
-  feeHeads: FeeHead[];
-  totalFee: number;
-  totalPaid: number;
-  totalPending: number;
-  totalDiscount: number;
-  lastPaymentDate: string;
-  lastPaymentAmount: number;
-  dueDate: string;
-  daysOverdue: number;
-  remindersSent: number;
-  lastReminderDate: string;
-  paymentHistory: PaymentHistory[];
-  status: 'Overdue' | 'Due Soon' | 'Partially Paid' | 'Unpaid';
-  priority: 'High' | 'Medium' | 'Low';
-  remarks: string;
-}
-export function FeePendingList() {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [showFilters, setShowFilters] = useState(false);
-  const [showViewModal, setShowViewModal] = useState(false);
-  const [showReminderModal, setShowReminderModal] = useState(false);
-  const [selectedStudent, setSelectedStudent] = useState<PendingFeeData | null>(
-    null
-  );
-  const [selectedStudents, setSelectedStudents] = useState<string[]>([]);
-  const [reminderMessage, setReminderMessage] = useState('');
-  const [reminderType, setReminderType] = useState<'sms' | 'email' | 'both'>(
-    'sms'
-  );
-  // Filter states
-  const [filterClass, setFilterClass] = useState('');
-  const [filterSection, setFilterSection] = useState('');
-  const [filterInstallment, setFilterInstallment] = useState('');
-  const [filterStatus, setFilterStatus] = useState('');
-  const [filterPriority, setFilterPriority] = useState('');
-  const [filterOverdueDays, setFilterOverdueDays] = useState('');
-  const [filterMinAmount, setFilterMinAmount] = useState('');
-  const [filterMaxAmount, setFilterMaxAmount] = useState('');
-  // Mock Pending Fee Data
-  const pendingData: PendingFeeData[] = [
+
+// --- Mock Data ---
+const MOCK_PENDING: PendingStudent[] = [
   {
     id: '1',
-    studentName: 'Vikram Singh',
-    fatherName: 'Harpreet Singh',
-    motherName: 'Gurpreet Kaur',
-    grNo: 'GR005',
-    class: '8',
-    section: 'C',
-    rollNo: '18',
-    category: 'General',
-    admissionDate: '2021-04-01',
-    parentContact: '9876543210',
-    parentEmail: 'harpreet.singh@email.com',
-    address: '456, Sector 15, Chandigarh - 160015',
-    installment: 'Term 2 (Aug-Nov)',
+    regNo: 'REG-2024-015',
+    firstName: 'Vikram',
+    lastName: 'Singh',
     feeStructure: 'Regular',
-    feeHeads: [
-    {
-      name: 'Tuition Fee',
-      totalAmount: 15000,
-      paidAmount: 5000,
-      pendingAmount: 10000,
-      dueDate: '2024-02-15'
-    },
-    {
-      name: 'Development Fee',
-      totalAmount: 3000,
-      paidAmount: 1000,
-      pendingAmount: 2000,
-      dueDate: '2024-02-15'
-    },
-    {
-      name: 'Computer Fee',
-      totalAmount: 2000,
-      paidAmount: 1000,
-      pendingAmount: 1000,
-      dueDate: '2024-02-15'
-    },
-    {
-      name: 'Library Fee',
-      totalAmount: 1500,
-      paidAmount: 500,
-      pendingAmount: 1000,
-      dueDate: '2024-02-15'
-    },
-    {
-      name: 'Laboratory Fee',
-      totalAmount: 2000,
-      paidAmount: 500,
-      pendingAmount: 1500,
-      dueDate: '2024-02-15'
-    },
-    {
-      name: 'Sports Fee',
-      totalAmount: 1000,
-      paidAmount: 500,
-      pendingAmount: 500,
-      dueDate: '2024-02-15'
-    },
-    {
-      name: 'Transport Fee',
-      totalAmount: 10500,
-      paidAmount: 1500,
-      pendingAmount: 9000,
-      dueDate: '2024-02-15'
-    }],
-
-    totalFee: 35000,
-    totalPaid: 10000,
-    totalPending: 25000,
-    totalDiscount: 0,
-    lastPaymentDate: '2024-01-15',
-    lastPaymentAmount: 10000,
-    dueDate: '2024-02-15',
-    daysOverdue: 45,
-    remindersSent: 3,
-    lastReminderDate: '2024-03-20',
-    paymentHistory: [
-    {
-      receiptNo: 'RCP-2024-015',
-      date: '2024-01-15',
-      amount: 10000,
-      mode: 'Cash',
-      installment: 'Term 2'
-    },
-    {
-      receiptNo: 'RCP-2023-089',
-      date: '2023-08-10',
-      amount: 35000,
-      mode: 'Online',
-      installment: 'Term 1'
-    }],
-
+    centre: 'Main Campus',
+    class: '8',
+    division: 'C',
+    term: 'Term 2',
+    year: '2024-2025',
+    amount: 35000,
+    discountAmount: 0,
+    finalAmount: 35000,
+    paidAmount: 10000,
+    pendingAmount: 25000,
     status: 'Overdue',
-    priority: 'High',
-    remarks: 'Parent requested extension due to financial difficulties'
+    unpaidDetails: [
+      {
+        id: 'ud1',
+        feeHead: 'Tuition Fee',
+        amount: 15000,
+        dueDate: '2024-08-15',
+      },
+      {
+        id: 'ud2',
+        feeHead: 'Transport Fee',
+        amount: 10000,
+        dueDate: '2024-08-15',
+      },
+    ],
   },
   {
     id: '2',
-    studentName: 'Ananya Gupta',
-    fatherName: 'Rajiv Gupta',
-    motherName: 'Sunita Gupta',
-    grNo: 'GR012',
-    class: '7',
-    section: 'B',
-    rollNo: '08',
-    category: 'General',
-    admissionDate: '2022-04-01',
-    parentContact: '9876543211',
-    parentEmail: 'rajiv.gupta@email.com',
-    address: '789, Model Town, Delhi - 110009',
-    installment: 'Term 2 (Aug-Nov)',
+    regNo: 'REG-2024-022',
+    firstName: 'Ananya',
+    lastName: 'Gupta',
     feeStructure: 'Regular',
-    feeHeads: [
-    {
-      name: 'Tuition Fee',
-      totalAmount: 12000,
-      paidAmount: 0,
-      pendingAmount: 12000,
-      dueDate: '2024-02-15'
-    },
-    {
-      name: 'Development Fee',
-      totalAmount: 2500,
-      paidAmount: 0,
-      pendingAmount: 2500,
-      dueDate: '2024-02-15'
-    },
-    {
-      name: 'Computer Fee',
-      totalAmount: 1500,
-      paidAmount: 0,
-      pendingAmount: 1500,
-      dueDate: '2024-02-15'
-    },
-    {
-      name: 'Library Fee',
-      totalAmount: 1000,
-      paidAmount: 0,
-      pendingAmount: 1000,
-      dueDate: '2024-02-15'
-    },
-    {
-      name: 'Laboratory Fee',
-      totalAmount: 1500,
-      paidAmount: 0,
-      pendingAmount: 1500,
-      dueDate: '2024-02-15'
-    },
-    {
-      name: 'Sports Fee',
-      totalAmount: 800,
-      paidAmount: 0,
-      pendingAmount: 800,
-      dueDate: '2024-02-15'
-    }],
-
-    totalFee: 19300,
-    totalPaid: 0,
-    totalPending: 19300,
-    totalDiscount: 0,
-    lastPaymentDate: '2023-08-05',
-    lastPaymentAmount: 19300,
-    dueDate: '2024-02-15',
-    daysOverdue: 45,
-    remindersSent: 5,
-    lastReminderDate: '2024-03-25',
-    paymentHistory: [
-    {
-      receiptNo: 'RCP-2023-056',
-      date: '2023-08-05',
-      amount: 19300,
-      mode: 'Cheque',
-      installment: 'Term 1'
-    }],
-
+    centre: 'North Campus',
+    class: '7',
+    division: 'B',
+    term: 'Term 2',
+    year: '2024-2025',
+    amount: 19300,
+    discountAmount: 0,
+    finalAmount: 19300,
+    paidAmount: 0,
+    pendingAmount: 19300,
     status: 'Unpaid',
-    priority: 'High',
-    remarks: 'No response to reminders. Need to escalate.'
+    unpaidDetails: [
+      {
+        id: 'ud3',
+        feeHead: 'Tuition Fee',
+        amount: 12000,
+        dueDate: '2024-09-01',
+      },
+      {
+        id: 'ud4',
+        feeHead: 'Development Fee',
+        amount: 7300,
+        dueDate: '2024-09-01',
+      },
+    ],
   },
-  // ... (other students - truncated for brevity)
   {
     id: '3',
-    studentName: 'Arjun Patel',
-    fatherName: 'Mehul Patel',
-    motherName: 'Priya Patel',
-    grNo: 'GR008',
+    regNo: 'REG-2024-038',
+    firstName: 'Arjun',
+    lastName: 'Patel',
+    feeStructure: 'OBC Concession',
+    centre: 'South Campus',
     class: '10',
-    section: 'A',
-    rollNo: '22',
-    category: 'OBC',
-    admissionDate: '2019-04-01',
-    parentContact: '9876543212',
-    parentEmail: 'mehul.patel@email.com',
-    address: '123, Satellite Area, Ahmedabad - 380015',
-    installment: 'Term 2 (Aug-Nov)',
-    feeStructure: 'Regular',
-    feeHeads: [
-    {
-      name: 'Tuition Fee',
-      totalAmount: 15000,
-      paidAmount: 10000,
-      pendingAmount: 5000,
-      dueDate: '2024-03-15'
-    },
-    {
-      name: 'Development Fee',
-      totalAmount: 3000,
-      paidAmount: 2000,
-      pendingAmount: 1000,
-      dueDate: '2024-03-15'
-    },
-    {
-      name: 'Computer Fee',
-      totalAmount: 2000,
-      paidAmount: 1500,
-      pendingAmount: 500,
-      dueDate: '2024-03-15'
-    },
-    {
-      name: 'Laboratory Fee',
-      totalAmount: 2000,
-      paidAmount: 1500,
-      pendingAmount: 500,
-      dueDate: '2024-03-15'
-    }],
-
-    totalFee: 22000,
-    totalPaid: 15000,
-    totalPending: 7000,
-    totalDiscount: 1000,
-    lastPaymentDate: '2024-02-20',
-    lastPaymentAmount: 15000,
-    dueDate: '2024-03-15',
-    daysOverdue: 15,
-    remindersSent: 1,
-    lastReminderDate: '2024-03-18',
-    paymentHistory: [
-    {
-      receiptNo: 'RCP-2024-045',
-      date: '2024-02-20',
-      amount: 15000,
-      mode: 'Online',
-      installment: 'Term 2'
-    },
-    {
-      receiptNo: 'RCP-2023-112',
-      date: '2023-08-15',
-      amount: 21000,
-      mode: 'UPI',
-      installment: 'Term 1'
-    }],
-
+    division: 'A',
+    term: 'Term 2',
+    year: '2024-2025',
+    amount: 22000,
+    discountAmount: 2000,
+    finalAmount: 20000,
+    paidAmount: 15000,
+    pendingAmount: 5000,
     status: 'Partially Paid',
-    priority: 'Medium',
-    remarks: 'Promised to pay by month end'
+    unpaidDetails: [
+      {
+        id: 'ud5',
+        feeHead: 'Tuition Fee Balance',
+        amount: 5000,
+        dueDate: '2024-10-15',
+      },
+    ],
   },
   {
     id: '4',
-    studentName: 'Sneha Reddy',
-    fatherName: 'Krishna Reddy',
-    motherName: 'Lakshmi Reddy',
-    grNo: 'GR015',
-    class: '9',
-    section: 'A',
-    rollNo: '12',
-    category: 'General',
-    admissionDate: '2020-04-01',
-    parentContact: '9876543213',
-    parentEmail: 'krishna.reddy@email.com',
-    address: '567, Banjara Hills, Hyderabad - 500034',
-    installment: 'Term 3 (Dec-Mar)',
+    regNo: 'REG-2024-045',
+    firstName: 'Sneha',
+    lastName: 'Reddy',
     feeStructure: 'Regular',
-    feeHeads: [
-    {
-      name: 'Tuition Fee',
-      totalAmount: 15000,
-      paidAmount: 0,
-      pendingAmount: 15000,
-      dueDate: '2024-04-10'
-    },
-    {
-      name: 'Development Fee',
-      totalAmount: 3000,
-      paidAmount: 0,
-      pendingAmount: 3000,
-      dueDate: '2024-04-10'
-    },
-    {
-      name: 'Computer Fee',
-      totalAmount: 2000,
-      paidAmount: 0,
-      pendingAmount: 2000,
-      dueDate: '2024-04-10'
-    },
-    {
-      name: 'Library Fee',
-      totalAmount: 1500,
-      paidAmount: 0,
-      pendingAmount: 1500,
-      dueDate: '2024-04-10'
-    },
-    {
-      name: 'Laboratory Fee',
-      totalAmount: 2000,
-      paidAmount: 0,
-      pendingAmount: 2000,
-      dueDate: '2024-04-10'
-    },
-    {
-      name: 'Sports Fee',
-      totalAmount: 1000,
-      paidAmount: 0,
-      pendingAmount: 1000,
-      dueDate: '2024-04-10'
-    }],
-
-    totalFee: 24500,
-    totalPaid: 0,
-    totalPending: 24500,
-    totalDiscount: 0,
-    lastPaymentDate: '2023-12-10',
-    lastPaymentAmount: 24500,
-    dueDate: '2024-04-10',
-    daysOverdue: 0,
-    remindersSent: 0,
-    lastReminderDate: '',
-    paymentHistory: [
-    {
-      receiptNo: 'RCP-2023-198',
-      date: '2023-12-10',
-      amount: 24500,
-      mode: 'Card',
-      installment: 'Term 2'
-    },
-    {
-      receiptNo: 'RCP-2023-089',
-      date: '2023-08-05',
-      amount: 24500,
-      mode: 'Online',
-      installment: 'Term 1'
-    }],
-
+    centre: 'Main Campus',
+    class: '9',
+    division: 'A',
+    term: 'Term 3',
+    year: '2024-2025',
+    amount: 24500,
+    discountAmount: 0,
+    finalAmount: 24500,
+    paidAmount: 0,
+    pendingAmount: 24500,
     status: 'Due Soon',
-    priority: 'Low',
-    remarks: ''
-  }
-  // ... add remaining students if needed
-  ];
-  // Filter students
-  const filteredStudents = pendingData.filter((student) => {
-    const matchesSearch =
-    student.studentName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    student.grNo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    student.fatherName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    student.parentContact.includes(searchTerm);
-    const matchesClass = filterClass ? student.class === filterClass : true;
-    const matchesSection = filterSection ?
-    student.section === filterSection :
-    true;
-    const matchesInstallment = filterInstallment ?
-    student.installment.
-    toLowerCase().
-    includes(filterInstallment.toLowerCase()) :
-    true;
-    const matchesStatus = filterStatus ? student.status === filterStatus : true;
-    const matchesPriority = filterPriority ?
-    student.priority === filterPriority :
-    true;
-    const matchesOverdue = filterOverdueDays ?
-    student.daysOverdue >= parseInt(filterOverdueDays) :
-    true;
-    const matchesMinAmount = filterMinAmount ?
-    student.totalPending >= parseInt(filterMinAmount) :
-    true;
-    const matchesMaxAmount = filterMaxAmount ?
-    student.totalPending <= parseInt(filterMaxAmount) :
-    true;
-    return (
-      matchesSearch &&
-      matchesClass &&
-      matchesSection &&
-      matchesInstallment &&
-      matchesStatus &&
-      matchesPriority &&
-      matchesOverdue &&
-      matchesMinAmount &&
-      matchesMaxAmount);
+    unpaidDetails: [
+      {
+        id: 'ud6',
+        feeHead: 'Tuition Fee',
+        amount: 15000,
+        dueDate: '2024-12-10',
+      },
+      {
+        id: 'ud7',
+        feeHead: 'Transport Fee',
+        amount: 9500,
+        dueDate: '2024-12-10',
+      },
+    ],
+  },
+  {
+    id: '5',
+    regNo: 'REG-2024-051',
+    firstName: 'Karan',
+    lastName: 'Malhotra',
+    feeStructure: 'Regular',
+    centre: 'North Campus',
+    class: '11',
+    division: 'Commerce',
+    term: 'Term 2',
+    year: '2024-2025',
+    amount: 28000,
+    discountAmount: 0,
+    finalAmount: 28000,
+    paidAmount: 14000,
+    pendingAmount: 14000,
+    status: 'Overdue',
+    unpaidDetails: [
+      {
+        id: 'ud8',
+        feeHead: 'Tuition Fee Balance',
+        amount: 14000,
+        dueDate: '2024-08-30',
+      },
+    ],
+  },
+  {
+    id: '6',
+    regNo: 'REG-2024-063',
+    firstName: 'Priya',
+    lastName: 'Desai',
+    feeStructure: 'Staff Ward',
+    centre: 'Main Campus',
+    class: '6',
+    division: 'C',
+    term: 'Term 2',
+    year: '2024-2025',
+    amount: 18000,
+    discountAmount: 9000,
+    finalAmount: 9000,
+    paidAmount: 0,
+    pendingAmount: 9000,
+    status: 'Unpaid',
+    unpaidDetails: [
+      {
+        id: 'ud9',
+        feeHead: 'Tuition Fee (Discounted)',
+        amount: 9000,
+        dueDate: '2024-09-15',
+      },
+    ],
+  },
+  {
+    id: '7',
+    regNo: 'REG-2024-072',
+    firstName: 'Rohan',
+    lastName: 'Mehta',
+    feeStructure: 'Regular',
+    centre: 'South Campus',
+    class: '12',
+    division: 'Science',
+    term: 'Term 2',
+    year: '2024-2025',
+    amount: 32000,
+    discountAmount: 0,
+    finalAmount: 32000,
+    paidAmount: 16000,
+    pendingAmount: 16000,
+    status: 'Partially Paid',
+    unpaidDetails: [
+      {
+        id: 'ud10',
+        feeHead: 'Tuition Fee Balance',
+        amount: 10000,
+        dueDate: '2024-09-20',
+      },
+      {
+        id: 'ud11',
+        feeHead: 'Lab Fee',
+        amount: 6000,
+        dueDate: '2024-09-20',
+      },
+    ],
+  },
+  {
+    id: '8',
+    regNo: 'REG-2024-089',
+    firstName: 'Kavya',
+    lastName: 'Nair',
+    feeStructure: 'Sibling Discount',
+    centre: 'North Campus',
+    class: '9',
+    division: 'B',
+    term: 'Term 2',
+    year: '2024-2025',
+    amount: 26000,
+    discountAmount: 2600,
+    finalAmount: 23400,
+    paidAmount: 0,
+    pendingAmount: 23400,
+    status: 'Due Soon',
+    unpaidDetails: [
+      {
+        id: 'ud12',
+        feeHead: 'Tuition Fee (Discounted)',
+        amount: 15400,
+        dueDate: '2024-11-15',
+      },
+      {
+        id: 'ud13',
+        feeHead: 'Activity Fee',
+        amount: 8000,
+        dueDate: '2024-11-15',
+      },
+    ],
+  },
+]
 
-  });
-  // Handlers
-  const handleViewStudent = (student: PendingFeeData) => {
-    setSelectedStudent(student);
-    setShowViewModal(true);
-  };
-  const handleSendReminder = (student: PendingFeeData) => {
-    setSelectedStudent(student);
-    setSelectedStudents([student.id]);
-    setReminderMessage(getDefaultReminderMessage(student));
-    setShowReminderModal(true);
-  };
-  const handleBulkReminder = () => {
-    if (selectedStudents.length === 0) {
-      setSelectedStudents(filteredStudents.map((s) => s.id));
-    }
-    setReminderMessage(getDefaultBulkReminderMessage());
-    setShowReminderModal(true);
-  };
-  const toggleStudentSelection = (id: string) => {
-    setSelectedStudents((prev) =>
-    prev.includes(id) ? prev.filter((s) => s !== id) : [...prev, id]
-    );
-  };
-  const selectAllStudents = () => {
-    if (selectedStudents.length === filteredStudents.length) {
-      setSelectedStudents([]);
+// --- Filter Options ---
+const ACADEMIC_YEARS = ['2024-2025', '2023-2024', '2022-2023']
+const MASTER_FRANCHISES = ['All', 'Main Franchise', 'North Franchise']
+const CENTRES = ['All', 'Main Campus', 'North Campus', 'South Campus']
+const CLASSES = ['All', '6', '7', '8', '9', '10', '11', '12']
+const DIVISIONS = ['All', 'A', 'B', 'C', 'Science', 'Commerce']
+const GENDERS = ['All', 'Male', 'Female', 'Other']
+const ACTIVE_STATUS = ['All', 'Active', 'Inactive']
+const BATCHES = ['All', 'Morning', 'Afternoon', 'Evening']
+const TERMS = ['All', 'Term 1', 'Term 2', 'Term 3', 'Annual']
+const FEE_STATUS = ['All', 'Partially Paid', 'Unpaid', 'Overdue', 'Due Soon']
+
+export function FeePendingList() {
+  // --- State ---
+  const [filters, setFilters] = useState({
+    academicYear: '2024-2025',
+    masterFranchise: 'All',
+    centre: 'All',
+    class: 'All',
+    division: 'All',
+    gender: 'All',
+    active: 'Active',
+    search: '',
+    batch: 'All',
+    term: 'All',
+    feeStatus: 'All',
+  })
+
+  const [expandedRowId, setExpandedRowId] = useState<string | null>(null)
+  const [activeReminderPanel, setActiveReminderPanel] = useState<string | null>(
+    null,
+  )
+
+  // Reminder Form State
+  const [reminderModes, setReminderModes] = useState({
+    sms: true,
+    email: true,
+    whatsapp: false,
+  })
+  const [reminderRecipient, setReminderRecipient] = useState('both')
+  const [reminderMessage, setReminderMessage] = useState('')
+
+  // --- Handlers ---
+  const handleFilterChange = (field: string, value: string) => {
+    setFilters((prev) => ({
+      ...prev,
+      [field]: value,
+    }))
+  }
+
+  const handleReset = () => {
+    setFilters({
+      academicYear: '2024-2025',
+      masterFranchise: 'All',
+      centre: 'All',
+      class: 'All',
+      division: 'All',
+      gender: 'All',
+      active: 'Active',
+      search: '',
+      batch: 'All',
+      term: 'All',
+      feeStatus: 'All',
+    })
+  }
+
+  const toggleRow = (id: string) => {
+    if (expandedRowId === id) {
+      setExpandedRowId(null)
+      setActiveReminderPanel(null)
     } else {
-      setSelectedStudents(filteredStudents.map((s) => s.id));
+      setExpandedRowId(id)
+      setActiveReminderPanel(null)
     }
-  };
-  const getDefaultReminderMessage = (student: PendingFeeData) => {
-    return `Dear ${student.fatherName},\n\nThis is a reminder regarding the pending fee of ₹${student.totalPending.toLocaleString()} for your ward ${student.studentName} (Class ${student.class}-${student.section}, GR No: ${student.grNo}).\n\nThe fee was due on ${student.dueDate}. Please arrange for the payment at the earliest.\n\nRegards,\nABC International School`;
-  };
-  const getDefaultBulkReminderMessage = () => {
-    return `Dear Parent,\n\nThis is a reminder regarding the pending fee for your ward. Please clear the outstanding dues at the earliest to avoid any inconvenience.\n\nFor any queries, please contact the accounts department.\n\nRegards,\nABC International School`;
-  };
-  const getStatusVariant = (
-  status: string)
-  : 'danger' | 'warning' | 'info' | 'secondary' => {
+  }
+
+  const openReminderPanel = (student: PendingStudent, e: React.MouseEvent) => {
+    e.stopPropagation()
+    setActiveReminderPanel(student.id)
+    setReminderMessage(
+      `Dear Parent, this is a reminder that a fee amount of ₹${student.pendingAmount.toLocaleString()} is pending for your ward ${student.firstName} ${student.lastName} (Class ${student.class}-${student.division}). Please arrange to pay at the earliest to avoid late fees. Regards, School Admin.`,
+    )
+  }
+
+  const handleSendReminder = (student: PendingStudent) => {
+    console.log('Sending reminder to:', student.firstName, student.lastName)
+    console.log('Modes:', reminderModes)
+    console.log('Recipient:', reminderRecipient)
+    console.log('Message:', reminderMessage)
+    setActiveReminderPanel(null)
+    alert(
+      `Reminder sent successfully to ${student.firstName} ${student.lastName}'s parents!`,
+    )
+  }
+
+  // --- Filter Logic ---
+  const filteredPending = MOCK_PENDING.filter((student) => {
+    if (filters.search) {
+      const query = filters.search.toLowerCase()
+      const nameMatch = `${student.firstName} ${student.lastName}`
+        .toLowerCase()
+        .includes(query)
+      const regMatch = student.regNo.toLowerCase().includes(query)
+      if (!nameMatch && !regMatch) return false
+    }
+    if (filters.academicYear !== 'All' && student.year !== filters.academicYear)
+      return false
+    if (filters.centre !== 'All' && student.centre !== filters.centre)
+      return false
+    if (filters.class !== 'All' && student.class !== filters.class) return false
+    if (filters.division !== 'All' && student.division !== filters.division)
+      return false
+    if (filters.term !== 'All' && student.term !== filters.term) return false
+    if (filters.feeStatus !== 'All' && student.status !== filters.feeStatus)
+      return false
+    return true
+  })
+
+  // --- Helpers ---
+  const getStatusBadge = (status: string) => {
     switch (status) {
       case 'Overdue':
-        return 'danger';
-      case 'Unpaid':
-        return 'danger';
-      case 'Partially Paid':
-        return 'warning';
+        return <Badge variant="danger">Overdue</Badge>
       case 'Due Soon':
-        return 'info';
+        return <Badge variant="info">Due Soon</Badge>
+      case 'Unpaid':
+        return <Badge variant="danger">Unpaid</Badge>
+      case 'Partially Paid':
+        return <Badge variant="warning">Partially Paid</Badge>
       default:
-        return 'secondary';
+        return <Badge variant="secondary">{status}</Badge>
     }
-  };
-  const getPriorityVariant = (
-  priority: string)
-  : 'danger' | 'warning' | 'success' => {
-    switch (priority) {
-      case 'High':
-        return 'danger';
-      case 'Medium':
-        return 'warning';
-      case 'Low':
-        return 'success';
-      default:
-        return 'warning';
-    }
-  };
-  const resetFilters = () => {
-    setFilterClass('');
-    setFilterSection('');
-    setFilterInstallment('');
-    setFilterStatus('');
-    setFilterPriority('');
-    setFilterOverdueDays('');
-    setFilterMinAmount('');
-    setFilterMaxAmount('');
-    setSearchTerm('');
-  };
-  const columns = [
-  {
-    key: 'select',
-    header:
-    <input
-      type="checkbox"
-      checked={
-      selectedStudents.length === filteredStudents.length &&
-      filteredStudents.length > 0
-      }
-      onChange={selectAllStudents}
-      className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" />,
-
-
-    render: (row: PendingFeeData) =>
-    <input
-      type="checkbox"
-      checked={selectedStudents.includes(row.id)}
-      onChange={() => toggleStudentSelection(row.id)}
-      className="w-4 h-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
-
-
-  },
-  {
-    key: 'student',
-    header: 'Student Details',
-    render: (row: PendingFeeData) =>
-    <div>
-          <div className="font-medium text-gray-900">{row.studentName}</div>
-          <div className="text-xs text-gray-500">S/o {row.fatherName}</div>
-          <div className="text-xs text-gray-500 flex items-center gap-2 mt-1">
-            <span className="bg-gray-100 px-2 py-0.5 rounded">{row.grNo}</span>
-            <span>
-              Class {row.class}-{row.section}
-            </span>
-            <span>Roll #{row.rollNo}</span>
-          </div>
-        </div>
-
-  },
-  {
-    key: 'contact',
-    header: 'Parent Contact',
-    render: (row: PendingFeeData) =>
-    <div>
-          <div className="text-sm text-gray-900">{row.fatherName}</div>
-          <div className="text-xs text-gray-500 flex items-center gap-1 mt-1">
-            <Phone className="w-3 h-3" />
-            {row.parentContact}
-          </div>
-          <div className="text-xs text-gray-500 flex items-center gap-1 truncate max-w-[150px]">
-            <Mail className="w-3 h-3" />
-            {row.parentEmail}
-          </div>
-        </div>
-
-  },
-  {
-    key: 'installment',
-    header: 'Installment',
-    render: (row: PendingFeeData) =>
-    <div>
-          <div className="text-sm font-medium text-gray-700">
-            {row.installment}
-          </div>
-          <div className="text-xs text-gray-500">{row.feeStructure}</div>
-          <div className="text-xs text-gray-500 mt-1">
-            {row.feeHeads.length} fee heads
-          </div>
-        </div>
-
-  },
-  {
-    key: 'pending',
-    header: 'Pending Amount',
-    render: (row: PendingFeeData) =>
-    <div>
-          <div className="font-bold text-red-600 text-lg">
-            ₹{row.totalPending.toLocaleString()}
-          </div>
-          <div className="text-xs text-gray-500 flex items-center gap-1 mt-1">
-            <Calendar className="w-3 h-3" />
-            Due: {row.dueDate}
-          </div>
-          {row.daysOverdue > 0 &&
-      <div className="text-xs text-red-500 flex items-center gap-1">
-              <AlertTriangle className="w-3 h-3" />
-              {row.daysOverdue} days overdue
-            </div>
-      }
-        </div>
-
-  },
-  {
-    key: 'status',
-    header: 'Status',
-    render: (row: PendingFeeData) =>
-    <div className="space-y-1">
-          <Badge variant={getStatusVariant(row.status)}>
-            {row.status === 'Overdue' &&
-        <AlertTriangle className="w-3 h-3 mr-1" />
-        }
-            {row.status === 'Unpaid' && <XCircle className="w-3 h-3 mr-1" />}
-            {row.status === 'Partially Paid' &&
-        <Clock className="w-3 h-3 mr-1" />
-        }
-            {row.status === 'Due Soon' &&
-        <AlertCircle className="w-3 h-3 mr-1" />
-        }
-            {row.status}
-          </Badge>
-          <Badge variant={getPriorityVariant(row.priority)} className="block">
-            {row.priority} Priority
-          </Badge>
-          {row.remindersSent > 0 &&
-      <div className="text-xs text-gray-500">
-              {row.remindersSent} reminders sent
-            </div>
-      }
-        </div>
-
-  },
-  {
-    key: 'actions',
-    header: 'Actions',
-    render: (row: PendingFeeData) =>
-    <div className="flex gap-1">
-          <Button
-        variant="ghost"
-        size="sm"
-        onClick={() => handleViewStudent(row)}>
-
-            <Eye className="w-4 h-4" />
-          </Button>
-          <Button
-        variant="ghost"
-        size="sm"
-        onClick={() => handleSendReminder(row)}>
-
-            <Bell className="w-4 h-4 text-blue-600" />
-          </Button>
-          <Button variant="ghost" size="sm">
-            <FileText className="w-4 h-4" />
-          </Button>
-        </div>
-
-  }];
+  }
 
   return (
     <div className="space-y-6 p-6 bg-gray-50 min-h-screen">
       {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Fee Pending List</h1>
-          <p className="text-sm text-gray-500">
-            Track and manage unpaid and partially paid student fees
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Button variant="outline">
-            <RefreshCw className="w-4 h-4 mr-2" />
-            Refresh
-          </Button>
-          <Button variant="outline">
-            <Download className="w-4 h-4 mr-2" />
-            Export List
-          </Button>
-          <Button variant="outline">
-            <Printer className="w-4 h-4 mr-2" />
-            Print Report
-          </Button>
-          <Button
-            variant="primary"
-            onClick={handleBulkReminder}
-            disabled={selectedStudents.length === 0}>
-
-            <Bell className="w-4 h-4 mr-2" />
-            Send Reminders ({selectedStudents.length})
-          </Button>
-        </div>
+      <div>
+        <h1 className="text-2xl font-bold text-gray-900">Fee Pending List</h1>
+        <p className="text-sm text-gray-500 mt-1">
+          Track and manage unpaid and partially paid student fees
+        </p>
       </div>
 
-      <ReportFilters />
-
-      {/* Info Banner */}
-      <Card className="p-4 bg-amber-50 border-amber-200">
-        <div className="flex items-start gap-3">
-          <AlertTriangle className="w-5 h-5 text-amber-600 mt-0.5" />
-          <div>
-            <h4 className="font-medium text-amber-900">
-              Pending Fee Management
-            </h4>
-            <p className="text-sm text-amber-700 mt-1">
-              This list shows all students with pending fee payments. You can
-              send individual or bulk reminders, view detailed fee breakdowns,
-              and track payment status.
-            </p>
+      {/* Filters Card */}
+      <Card className="p-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+          <Select
+            label="Academic Year"
+            options={ACADEMIC_YEARS.map((y) => ({
+              value: y,
+              label: y,
+            }))}
+            value={filters.academicYear}
+            onChange={(e) => handleFilterChange('academicYear', e.target.value)}
+          />
+          <Select
+            label="Master Franchise"
+            options={MASTER_FRANCHISES.map((f) => ({
+              value: f,
+              label: f,
+            }))}
+            value={filters.masterFranchise}
+            onChange={(e) =>
+              handleFilterChange('masterFranchise', e.target.value)
+            }
+          />
+          <Select
+            label="Centre"
+            options={CENTRES.map((c) => ({
+              value: c,
+              label: c,
+            }))}
+            value={filters.centre}
+            onChange={(e) => handleFilterChange('centre', e.target.value)}
+          />
+          <Select
+            label="Class"
+            options={CLASSES.map((c) => ({
+              value: c,
+              label: c === 'All' ? 'All Classes' : `Class ${c}`,
+            }))}
+            value={filters.class}
+            onChange={(e) => handleFilterChange('class', e.target.value)}
+          />
+          <Select
+            label="Division"
+            options={DIVISIONS.map((d) => ({
+              value: d,
+              label: d === 'All' ? 'All Divisions' : d,
+            }))}
+            value={filters.division}
+            onChange={(e) => handleFilterChange('division', e.target.value)}
+          />
+          <Select
+            label="Gender"
+            options={GENDERS.map((g) => ({
+              value: g,
+              label: g,
+            }))}
+            value={filters.gender}
+            onChange={(e) => handleFilterChange('gender', e.target.value)}
+          />
+          <Select
+            label="Active Status"
+            options={ACTIVE_STATUS.map((s) => ({
+              value: s,
+              label: s,
+            }))}
+            value={filters.active}
+            onChange={(e) => handleFilterChange('active', e.target.value)}
+          />
+          <Select
+            label="Batch"
+            options={BATCHES.map((b) => ({
+              value: b,
+              label: b,
+            }))}
+            value={filters.batch}
+            onChange={(e) => handleFilterChange('batch', e.target.value)}
+          />
+          <Select
+            label="Term"
+            options={TERMS.map((t) => ({
+              value: t,
+              label: t,
+            }))}
+            value={filters.term}
+            onChange={(e) => handleFilterChange('term', e.target.value)}
+          />
+          <Select
+            label="Fee Status"
+            options={FEE_STATUS.map((s) => ({
+              value: s,
+              label: s,
+            }))}
+            value={filters.feeStatus}
+            onChange={(e) => handleFilterChange('feeStatus', e.target.value)}
+          />
+          <div className="lg:col-span-2">
+            <Input
+              label="Search Student"
+              placeholder="Search by Name or Reg No..."
+              value={filters.search}
+              onChange={(e) => handleFilterChange('search', e.target.value)}
+              leftIcon={<Search className="w-4 h-4" />}
+            />
           </div>
         </div>
-      </Card>
-
-      {/* Search and Filters */}
-      <Card className="p-4">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
-          <div className="md:col-span-2">
-            <Input
-              placeholder="Search by Student Name, GR No, Parent Name, Contact..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              leftIcon={<Search className="w-4 h-4 text-gray-400" />} />
-
-          </div>
-          <Select
-            options={[
-            {
-              value: '2024-2025',
-              label: '2024-2025'
-            },
-            {
-              value: '2023-2024',
-              label: '2023-2024'
-            }]
-            }
-            placeholder="Academic Year" />
-
-          <Button
-            variant="outline"
-            className="w-full"
-            onClick={() => setShowFilters(!showFilters)}>
-
-            <Filter className="w-4 h-4 mr-2" />
-            {showFilters ? 'Hide Filters' : 'More Filters'}
-            {showFilters ?
-            <ChevronUp className="w-4 h-4 ml-2" /> :
-
-            <ChevronDown className="w-4 h-4 ml-2" />
-            }
+        <div className="flex justify-end gap-3 pt-4 border-t border-gray-100">
+          <Button variant="outline" onClick={handleReset}>
+            <RotateCcw className="w-4 h-4 mr-2" />
+            Reset
+          </Button>
+          <Button variant="primary">
+            <Search className="w-4 h-4 mr-2" />
+            Search
           </Button>
         </div>
-
-        {/* Extended Filters */}
-        {showFilters &&
-        <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 p-4 bg-gray-50 rounded-lg">
-            <Select
-            label="Class"
-            value={filterClass}
-            onChange={(e) => setFilterClass(e.target.value)}
-            options={[
-            {
-              value: '',
-              label: 'All Classes'
-            },
-            {
-              value: '6',
-              label: 'Class 6'
-            },
-            {
-              value: '7',
-              label: 'Class 7'
-            },
-            {
-              value: '8',
-              label: 'Class 8'
-            },
-            {
-              value: '9',
-              label: 'Class 9'
-            },
-            {
-              value: '10',
-              label: 'Class 10'
-            },
-            {
-              value: '11',
-              label: 'Class 11'
-            },
-            {
-              value: '12',
-              label: 'Class 12'
-            }]
-            } />
-
-            <Select
-            label="Section"
-            value={filterSection}
-            onChange={(e) => setFilterSection(e.target.value)}
-            options={[
-            {
-              value: '',
-              label: 'All Sections'
-            },
-            {
-              value: 'A',
-              label: 'Section A'
-            },
-            {
-              value: 'B',
-              label: 'Section B'
-            },
-            {
-              value: 'C',
-              label: 'Section C'
-            }]
-            } />
-
-            <Select
-            label="Status"
-            value={filterStatus}
-            onChange={(e) => setFilterStatus(e.target.value)}
-            options={[
-            {
-              value: '',
-              label: 'All Status'
-            },
-            {
-              value: 'Overdue',
-              label: 'Overdue'
-            },
-            {
-              value: 'Unpaid',
-              label: 'Unpaid'
-            },
-            {
-              value: 'Partially Paid',
-              label: 'Partially Paid'
-            },
-            {
-              value: 'Due Soon',
-              label: 'Due Soon'
-            }]
-            } />
-
-            <Select
-            label="Priority"
-            value={filterPriority}
-            onChange={(e) => setFilterPriority(e.target.value)}
-            options={[
-            {
-              value: '',
-              label: 'All Priorities'
-            },
-            {
-              value: 'High',
-              label: 'High Priority'
-            },
-            {
-              value: 'Medium',
-              label: 'Medium Priority'
-            },
-            {
-              value: 'Low',
-              label: 'Low Priority'
-            }]
-            } />
-
-            <Input
-            label="Min Amount"
-            type="number"
-            placeholder="₹0"
-            value={filterMinAmount}
-            onChange={(e) => setFilterMinAmount(e.target.value)} />
-
-            <div className="flex items-end gap-2">
-              <Button variant="primary" className="flex-1">
-                <Search className="w-4 h-4 mr-2" />
-                Apply
-              </Button>
-              <Button variant="outline" onClick={resetFilters}>
-                <RefreshCw className="w-4 h-4" />
-              </Button>
-            </div>
-          </div>
-        }
-
-        {/* Selected Count */}
-        {selectedStudents.length > 0 &&
-        <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg mb-4">
-            <div className="flex items-center gap-2 text-blue-800">
-              <Users className="w-4 h-4" />
-              <span className="font-medium">
-                {selectedStudents.length} students selected
-              </span>
-            </div>
-            <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => setSelectedStudents([])}>
-
-              <X className="w-4 h-4 mr-1" />
-              Clear
-            </Button>
-          </div>
-        }
-
-        <Table columns={columns} data={filteredStudents} />
       </Card>
 
-      {/* View Student Modal (Centered) */}
-      {showViewModal && selectedStudent &&
-      <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <Card className="w-full max-w-4xl max-h-[90vh] overflow-y-auto">
-            <div className="p-6">
-              <div className="flex justify-between items-center mb-6">
-                <div>
-                  <h2 className="text-2xl font-bold text-gray-900">
-                    {selectedStudent.studentName} - Fee Details
-                  </h2>
-                  <p className="text-sm text-gray-500">
-                    GR No: {selectedStudent.grNo}
-                  </p>
-                </div>
-                <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowViewModal(false)}>
+      {/* Results Table */}
+      <Card className="overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm text-left">
+            <thead className="bg-gray-50 text-gray-700 font-medium border-b border-gray-200">
+              <tr>
+                <th className="px-4 py-3">Reg No</th>
+                <th className="px-4 py-3">First Name</th>
+                <th className="px-4 py-3">Last Name</th>
+                <th className="px-4 py-3">Fee Structure</th>
+                <th className="px-4 py-3">Centre</th>
+                <th className="px-4 py-3">Class</th>
+                <th className="px-4 py-3">Term</th>
+                <th className="px-4 py-3">Year</th>
+                <th className="px-4 py-3 text-right">Amount</th>
+                <th className="px-4 py-3 text-right">Discount</th>
+                <th className="px-4 py-3 text-right">Final Amount</th>
+                <th className="px-4 py-3 text-right">Paid Amount</th>
+                <th className="px-4 py-3 text-right">Pending Amount</th>
+                <th className="px-4 py-3 text-center">Status</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100">
+              {filteredPending.map((student) => (
+                <Fragment key={student.id}>
+                  <tr
+                    className={`hover:bg-gray-50 cursor-pointer transition-colors ${
+                      expandedRowId === student.id ? 'bg-blue-50/30' : 'bg-white'
+                    }`}
+                    onClick={() => toggleRow(student.id)}
+                  >
+                    <td className="px-4 py-3 font-mono text-xs text-gray-600">
+                      {student.regNo}
+                    </td>
+                    <td className="px-4 py-3 font-medium text-gray-900">
+                      {student.firstName}
+                    </td>
+                    <td className="px-4 py-3 text-gray-700">
+                      {student.lastName}
+                    </td>
+                    <td className="px-4 py-3 text-gray-600">
+                      {student.feeStructure}
+                    </td>
+                    <td className="px-4 py-3 text-gray-600">{student.centre}</td>
+                    <td className="px-4 py-3 text-gray-600">
+                      {student.class}-{student.division}
+                    </td>
+                    <td className="px-4 py-3 text-gray-600">{student.term}</td>
+                    <td className="px-4 py-3 text-gray-600">{student.year}</td>
+                    <td className="px-4 py-3 text-right text-gray-700">
+                      ₹{student.amount.toLocaleString()}
+                    </td>
+                    <td className="px-4 py-3 text-right text-green-600">
+                      ₹{student.discountAmount.toLocaleString()}
+                    </td>
+                    <td className="px-4 py-3 text-right text-gray-900">
+                      ₹{student.finalAmount.toLocaleString()}
+                    </td>
+                    <td className="px-4 py-3 text-right text-blue-600">
+                      ₹{student.paidAmount.toLocaleString()}
+                    </td>
+                    <td className="px-4 py-3 text-right font-bold text-red-600">
+                      ₹{student.pendingAmount.toLocaleString()}
+                    </td>
+                    <td className="px-4 py-3 text-center">
+                      <div className="flex items-center justify-center gap-2">
+                        {getStatusBadge(student.status)}
+                        {expandedRowId === student.id ? (
+                          <ChevronUp className="w-4 h-4 text-gray-400" />
+                        ) : (
+                          <ChevronDown className="w-4 h-4 text-gray-400" />
+                        )}
+                      </div>
+                    </td>
+                  </tr>
 
-                  <X className="w-5 h-5" />
-                </Button>
-              </div>
+                  {/* Expandable Panel */}
+                  {expandedRowId === student.id && (
+                    <tr>
+                      <td colSpan={14} className="p-0 border-b border-gray-200">
+                        <div className="bg-blue-50/30 p-6 shadow-inner">
+                          <div className="bg-white rounded-lg border border-gray-200 p-5 shadow-sm">
+                            {/* Header */}
+                            <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 border-b border-gray-100 pb-4 gap-4">
+                              <div>
+                                <h3 className="text-lg font-bold text-gray-900">
+                                  {student.firstName} {student.lastName}
+                                </h3>
+                                <p className="text-sm text-gray-500">
+                                  Class {student.class}-{student.division} | Reg
+                                  No: {student.regNo}
+                                </p>
+                              </div>
+                              <div className="flex items-center gap-3">
+                                {student.paidAmount > 0 && (
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    leftIcon={<Eye className="w-4 h-4" />}
+                                  >
+                                    View Receipt
+                                  </Button>
+                                )}
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                                  leftIcon={<XCircle className="w-4 h-4" />}
+                                >
+                                  Cancel
+                                </Button>
+                                <Button
+                                  variant="primary"
+                                  size="sm"
+                                  leftIcon={<Bell className="w-4 h-4" />}
+                                  onClick={(e) => openReminderPanel(student, e)}
+                                >
+                                  Send Reminder
+                                </Button>
+                              </div>
+                            </div>
 
-              {/* Status & Amount */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                <Card className="p-4 bg-red-50 border-red-200 text-center">
-                  <p className="text-sm text-red-700">Total Pending</p>
-                  <p className="text-3xl font-bold text-red-600">
-                    ₹{selectedStudent.totalPending.toLocaleString()}
-                  </p>
-                </Card>
-                <Card className="p-4 bg-gray-50 text-center">
-                  <p className="text-sm text-gray-600">Due Date</p>
-                  <p className="text-xl font-bold text-gray-900">
-                    {selectedStudent.dueDate}
-                  </p>
-                </Card>
-                <Card className="p-4 bg-amber-50 text-center">
-                  <p className="text-sm text-amber-700">Overdue Days</p>
-                  <p className="text-2xl font-bold text-amber-800">
-                    {selectedStudent.daysOverdue}
-                  </p>
-                </Card>
-              </div>
+                            {/* Unpaid Details Table */}
+                            <div className="mb-4">
+                              <h4 className="font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                                <AlertTriangle className="w-4 h-4 text-red-500" />{' '}
+                                Unpaid Fee Details
+                              </h4>
+                              <div className="border border-gray-200 rounded-lg overflow-hidden">
+                                <table className="w-full text-sm text-left">
+                                  <thead className="bg-gray-50 border-b border-gray-200">
+                                    <tr>
+                                      <th className="px-4 py-2 font-medium text-gray-700">
+                                        Fee Head
+                                      </th>
+                                      <th className="px-4 py-2 font-medium text-gray-700">
+                                        Due Date
+                                      </th>
+                                      <th className="px-4 py-2 font-medium text-gray-700 text-right">
+                                        Amount
+                                      </th>
+                                    </tr>
+                                  </thead>
+                                  <tbody className="divide-y divide-gray-100">
+                                    {student.unpaidDetails.map((detail) => (
+                                      <tr key={detail.id}>
+                                        <td className="px-4 py-2 text-gray-800">
+                                          {detail.feeHead}
+                                        </td>
+                                        <td className="px-4 py-2 text-gray-600">
+                                          <div className="flex items-center gap-1">
+                                            <Calendar className="w-3 h-3" />
+                                            {new Date(
+                                              detail.dueDate,
+                                            ).toLocaleDateString('en-IN')}
+                                          </div>
+                                        </td>
+                                        <td className="px-4 py-2 text-right font-medium text-red-600">
+                                          ₹{detail.amount.toLocaleString()}
+                                        </td>
+                                      </tr>
+                                    ))}
+                                    <tr className="bg-red-50/50 font-bold">
+                                      <td
+                                        colSpan={2}
+                                        className="px-4 py-2 text-right text-gray-900"
+                                      >
+                                        Total Pending:
+                                      </td>
+                                      <td className="px-4 py-2 text-right text-red-600">
+                                        ₹
+                                        {student.pendingAmount.toLocaleString()}
+                                      </td>
+                                    </tr>
+                                  </tbody>
+                                </table>
+                              </div>
+                            </div>
 
-              {/* Fee Breakdown */}
-              <Card className="p-6 mb-6">
-                <h3 className="text-lg font-semibold mb-4">
-                  Fee Head Breakdown
-                </h3>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead>
-                      <tr className="border-b">
-                        <th className="text-left py-2">Fee Head</th>
-                        <th className="text-right py-2">Total</th>
-                        <th className="text-right py-2">Paid</th>
-                        <th className="text-right py-2">Pending</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {selectedStudent.feeHeads.map((head, i) =>
-                    <tr key={i} className="border-b">
-                          <td className="py-3">{head.name}</td>
-                          <td className="text-right">
-                            ₹{head.totalAmount.toLocaleString()}
-                          </td>
-                          <td className="text-right text-green-600">
-                            ₹{head.paidAmount.toLocaleString()}
-                          </td>
-                          <td className="text-right text-red-600 font-medium">
-                            ₹{head.pendingAmount.toLocaleString()}
-                          </td>
-                        </tr>
-                    )}
-                    </tbody>
-                  </table>
-                </div>
-              </Card>
+                            {/* Send Reminder Inline Panel */}
+                            {activeReminderPanel === student.id && (
+                              <div className="mt-6 border border-indigo-100 bg-indigo-50/50 rounded-lg p-5 animate-in fade-in slide-in-from-top-4">
+                                <h4 className="font-semibold text-indigo-900 mb-4 flex items-center gap-2">
+                                  <MessageSquare className="w-4 h-4" /> Compose
+                                  Reminder
+                                </h4>
 
-              <div className="flex justify-end gap-3">
-                <Button variant="outline">
-                  <Printer className="w-4 h-4 mr-2" />
-                  Print Statement
-                </Button>
-                <Button
-                variant="primary"
-                onClick={() => handleSendReminder(selectedStudent)}>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-4">
+                                  {/* Communication Mode */}
+                                  <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                      Mode of Communication
+                                    </label>
+                                    <div className="flex flex-col gap-2">
+                                      <label className="flex items-center gap-2 cursor-pointer">
+                                        <input
+                                          type="checkbox"
+                                          checked={reminderModes.sms}
+                                          onChange={(e) =>
+                                            setReminderModes({
+                                              ...reminderModes,
+                                              sms: e.target.checked,
+                                            })
+                                          }
+                                          className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                                        />
+                                        <span className="text-sm text-gray-700">
+                                          SMS
+                                        </span>
+                                      </label>
+                                      <label className="flex items-center gap-2 cursor-pointer">
+                                        <input
+                                          type="checkbox"
+                                          checked={reminderModes.email}
+                                          onChange={(e) =>
+                                            setReminderModes({
+                                              ...reminderModes,
+                                              email: e.target.checked,
+                                            })
+                                          }
+                                          className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                                        />
+                                        <span className="text-sm text-gray-700">
+                                          Email
+                                        </span>
+                                      </label>
+                                      <label className="flex items-center gap-2 cursor-pointer">
+                                        <input
+                                          type="checkbox"
+                                          checked={reminderModes.whatsapp}
+                                          onChange={(e) =>
+                                            setReminderModes({
+                                              ...reminderModes,
+                                              whatsapp: e.target.checked,
+                                            })
+                                          }
+                                          className="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                                        />
+                                        <span className="text-sm text-gray-700">
+                                          WhatsApp
+                                        </span>
+                                      </label>
+                                    </div>
+                                  </div>
 
-                  <Bell className="w-4 h-4 mr-2" />
-                  Send Reminder
-                </Button>
-              </div>
-            </div>
-          </Card>
+                                  {/* Recipient */}
+                                  <div>
+                                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                                      Recipient
+                                    </label>
+                                    <div className="flex flex-col gap-2">
+                                      <label className="flex items-center gap-2 cursor-pointer">
+                                        <input
+                                          type="radio"
+                                          name={`recipient-${student.id}`}
+                                          value="mother"
+                                          checked={
+                                            reminderRecipient === 'mother'
+                                          }
+                                          onChange={(e) =>
+                                            setReminderRecipient(e.target.value)
+                                          }
+                                          className="border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                                        />
+                                        <span className="text-sm text-gray-700">
+                                          Mother
+                                        </span>
+                                      </label>
+                                      <label className="flex items-center gap-2 cursor-pointer">
+                                        <input
+                                          type="radio"
+                                          name={`recipient-${student.id}`}
+                                          value="father"
+                                          checked={
+                                            reminderRecipient === 'father'
+                                          }
+                                          onChange={(e) =>
+                                            setReminderRecipient(e.target.value)
+                                          }
+                                          className="border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                                        />
+                                        <span className="text-sm text-gray-700">
+                                          Father
+                                        </span>
+                                      </label>
+                                      <label className="flex items-center gap-2 cursor-pointer">
+                                        <input
+                                          type="radio"
+                                          name={`recipient-${student.id}`}
+                                          value="both"
+                                          checked={reminderRecipient === 'both'}
+                                          onChange={(e) =>
+                                            setReminderRecipient(e.target.value)
+                                          }
+                                          className="border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                                        />
+                                        <span className="text-sm text-gray-700">
+                                          Both Parents
+                                        </span>
+                                      </label>
+                                    </div>
+                                  </div>
+                                </div>
+
+                                {/* Message Preview */}
+                                <div className="mb-4">
+                                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                                    Message Preview
+                                  </label>
+                                  <textarea
+                                    className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 min-h-[100px]"
+                                    value={reminderMessage}
+                                    onChange={(e) =>
+                                      setReminderMessage(e.target.value)
+                                    }
+                                  />
+                                </div>
+
+                                <div className="flex justify-end gap-3">
+                                  <Button
+                                    variant="outline"
+                                    onClick={() => setActiveReminderPanel(null)}
+                                  >
+                                    Cancel
+                                  </Button>
+                                  <Button
+                                    variant="primary"
+                                    className="bg-indigo-600 hover:bg-indigo-700"
+                                    leftIcon={<Send className="w-4 h-4" />}
+                                    onClick={() => handleSendReminder(student)}
+                                  >
+                                    Send Reminder
+                                  </Button>
+                                </div>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+                </Fragment>
+              ))}
+
+              {filteredPending.length === 0 && (
+                <tr>
+                  <td
+                    colSpan={14}
+                    className="px-4 py-8 text-center text-gray-500"
+                  >
+                    No pending fees found matching your filters.
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </div>
-      }
-
-      {/* Reminder Modal (Centered) */}
-      {showReminderModal &&
-      <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-          <Card className="w-full max-w-lg">
-            <div className="p-6">
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="text-xl font-semibold">Send Payment Reminder</h3>
-                <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowReminderModal(false)}>
-
-                  <X className="w-5 h-5" />
-                </Button>
-              </div>
-
-              <div className="space-y-4">
-                <div>
-                  <label className="block text-sm font-medium mb-2">
-                    Reminder Type
-                  </label>
-                  <div className="flex gap-4">
-                    <label className="flex items-center gap-2">
-                      <input
-                      type="radio"
-                      name="type"
-                      value="sms"
-                      checked={reminderType === 'sms'}
-                      onChange={() => setReminderType('sms')}
-                      className="text-blue-600" />
-
-                      <MessageSquare className="w-4 h-4" /> SMS
-                    </label>
-                    <label className="flex items-center gap-2">
-                      <input
-                      type="radio"
-                      name="type"
-                      value="email"
-                      checked={reminderType === 'email'}
-                      onChange={() => setReminderType('email')}
-                      className="text-blue-600" />
-
-                      <Mail className="w-4 h-4" /> Email
-                    </label>
-                    <label className="flex items-center gap-2">
-                      <input
-                      type="radio"
-                      name="type"
-                      value="both"
-                      checked={reminderType === 'both'}
-                      onChange={() => setReminderType('both')}
-                      className="text-blue-600" />
-
-                      <Send className="w-4 h-4" /> Both
-                    </label>
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium mb-2">
-                    Message
-                  </label>
-                  <textarea
-                  value={reminderMessage}
-                  onChange={(e) => setReminderMessage(e.target.value)}
-                  rows={6}
-                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500" />
-
-                </div>
-
-                <div className="flex justify-end gap-3">
-                  <Button
-                  variant="outline"
-                  onClick={() => setShowReminderModal(false)}>
-
-                    Cancel
-                  </Button>
-                  <Button variant="primary">
-                    <Send className="w-4 h-4 mr-2" />
-                    Send Reminder
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </Card>
-        </div>
-      }
-    </div>);
-
+      </Card>
+    </div>
+  )
 }

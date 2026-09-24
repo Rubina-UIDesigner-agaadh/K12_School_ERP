@@ -661,3 +661,6 @@ export function FeeOpening() {
     </div>
   )
 }
+
+// Registry alias: navigation page "branch-transfer" expects this export name
+export { FeeOpening as BranchTransfer };

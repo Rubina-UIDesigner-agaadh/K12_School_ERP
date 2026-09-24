@@ -209,18 +209,6 @@ export const financeRegistry: Record<string, () => any> = {
     () => import('../finance/expenses/PettyCashIssue'),
     'PettyCashIssue'
   ),
-  'petty-cash-expense-entry': rp(
-    () => import('../finance/expenses/PettyCashExpenseEntry'),
-    'PettyCashExpenseEntry'
-  ),
-  'staff-advance-issue': rp(
-    () => import('../finance/expenses/StaffAdvanceIssue'),
-    'StaffAdvanceIssue'
-  ),
-  'staff-advance-settlement': rp(
-    () => import('../finance/expenses/StaffAdvanceSettlement'),
-    'StaffAdvanceSettlement'
-  ),
   'recurring-expense-scheduler': rp(
     () => import('../finance/expenses/RecurringExpenseScheduler'),
     'RecurringExpenseScheduler'

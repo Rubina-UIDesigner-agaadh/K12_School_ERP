@@ -62,6 +62,14 @@ export const hrRegistry: Record<string, () => any> = {
     () => import('../hr/employee/TeacherClassSubjectAllocation'),
     'TeacherClassSubjectAllocation'
   ),
+  'staff-advance-issue': rp(
+    () => import('../hr/employee/StaffAdvanceIssue'),
+    'StaffAdvanceIssue'
+  ),
+  'staff-advance-settlement': rp(
+    () => import('../hr/employee/StaffAdvanceSettlement'),
+    'StaffAdvanceSettlement'
+  ),
   'employee-report-advanced': rp(
     () => import('../hr/employee/EmployeeReportAdvanced'),
     'EmployeeReportAdvanced'

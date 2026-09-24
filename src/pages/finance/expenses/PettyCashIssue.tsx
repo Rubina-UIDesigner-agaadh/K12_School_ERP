@@ -42,7 +42,6 @@ import {
   Zap,
   Database,
   HelpCircle,
-  Plus,
   Minus,
   Calculator,
   Banknote,
@@ -142,7 +141,6 @@ function InfoModal({
             </button>
           </div>
         </div>
-        text
         <div className="p-6 space-y-6 overflow-y-auto max-h-[60vh]">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="bg-blue-50 rounded-xl p-5 border border-blue-100">
@@ -459,7 +457,6 @@ export function PettyCashExpenseEntry() {
     const lowBalanceAccounts = CASH_ACCOUNTS.filter(
       (a) => a.status === 'low_balance',
     ).length
-    text
     return {
       totalBalance,
       totalSpentToday,
@@ -490,7 +487,6 @@ export function PettyCashExpenseEntry() {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0]
       setReceipt(file)
-      text
       // Create preview
       const reader = new FileReader()
       reader.onloadend = () => {
@@ -505,7 +501,6 @@ export function PettyCashExpenseEntry() {
   }
   const handleSave = async () => {
     if (!isValid) return
-    text
     setIsProcessing(true)
     // Simulate API Call
     await new Promise((resolve) => setTimeout(resolve, 1500))
@@ -583,7 +578,6 @@ export function PettyCashExpenseEntry() {
                 </p>
               </div>
             </div>
-            text
             <div className="flex items-center gap-3">
               {/* View Toggle */}
               <div className="flex bg-gray-100 rounded-lg p-1">
@@ -1689,3 +1683,6 @@ function Plus({ className }: { className?: string }) {
     </svg>
   )
 }
+
+// Registry alias: navigation page "petty-cash-issue" expects this export name
+export { PettyCashExpenseEntry as PettyCashIssue };
